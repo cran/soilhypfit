@@ -1,0 +1,63 @@
+2020-08-11  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_S3methods.R (plot.fit_wrc_hcc): optional output of parameter values
+
+
+2021-01-21  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_private_functions.R (objective_nlp): correction of degrees of freedom for ml and mpd method
+
+
+2021-02-26  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_private_functions.R (estimate_nlp): correction of error checking for checking validity of Hessian
+* soilhypfit_private_functions.R (fit_wrc_hcc_fit): correction of error when processing empty Hessian matrix, correction of error for insufficient number of measurements
+* soilhypfit_S3methods.R (vcov.fit_wrc_hcc,coef.vcov_fit_wrc_hcc,coef.fit_wrc_hcc): correction error when computing standard errors for nonlinear parameters when some parameters are fixed
+
+
+2021-02-28  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (param_boundf, check_param_boundf): checking of valid boundaries in new function check_param_boundf
+* soilhypfit_exported_functions.R (fit_wrc_hcc): new arguments lower_param, upper_param for specifying sample-specific lower and upper parameter bounds
+
+
+2021-05-21  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (fit_wrc_hcc): new defaults for thetar and thetas in  lower_param, upper_param when specifying sample-specific lower and upper parameter bounds
+* soilhypfit_exported_functions.R (control_fit_wrc_hcc): new default values for arguments of control_nloptr controlling convergence
+
+
+2021-05-22  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (fit_wrc_hcc): check whether inequality constraints are satisfied for constrained estimation
+
+
+2021-05-26  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_S3methods.R (plot.fit_wrc_hcc): function specific ellipsis arguments
+
+
+2021-06-04  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (fit_wrc_hcc): correction of error when passing param and fit_param to input.data
+
+
+2021-06-11  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (control_fit_wrc_hcc): new default values for number iterations for settings == cglobal|clocal
+
+
+2021-06-11  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_S3methods.R (plot.fit_wrc_hcc): correction of error in generation of arg.value.x, arg.value.y
+
+
+2021-07-21  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (control_fit_wrc_hcc): new default 
+initial values for the nonlinear parameters alpha and n
+
+
+2021-10-20  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_S3methods.R (plot.fit_wrc_hcc): optional user-defined ylim_wc and ylim_hc arguments

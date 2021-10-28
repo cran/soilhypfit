@@ -1,0 +1,62 @@
+# 2021-10-25 A. Papritz
+
+import(graphics, nloptr, parallel, snowfall, stats, utils)
+
+importFrom(mgcv, gam)
+importFrom(quadprog, solve.QP)
+importFrom(parallel, detectCores, mclapply)
+importFrom(Rmpfr, mpfr)
+# importFrom(snowfall, sfExport, sfExportAll, sfInit, sfIsRunning, sfLapply,
+#  sfLibrary, sfStop)
+importFrom(SoilHyP, SCEoptim)
+
+# exported functions
+
+export(
+  bwd_transf,
+  check_param_boundf,
+  control_fit_wrc_hcc,
+  control_nloptr,
+  control_pcmp,
+  control_sce,
+  convergence_message,
+  default_fit_param,
+  dfwd_transf,
+  extract_error_messages,
+  fit_wrc_hcc,
+  fwd_transf,
+  hc_model,
+  hcrel_model,
+  lc,
+  lt,
+  param_boundf,
+  param_transf,
+  sat_model,
+  select_failed_fits,
+  wc_model
+)
+
+# non-documented internal functions
+#
+# d1ineq_constraint_nlp
+# d1l0
+# d1lc
+# estimate_lp
+# estimate_nlp
+# fit_wrc_hcc_fit
+# gradient_nlp
+# ineq_constraint_nlp
+# objective_nlp
+# stop_cluster
+
+
+## S3 methods
+
+S3method(coef, fit_wrc_hcc)
+S3method(coef, vcov_fit_wrc_hcc)
+S3method(lines, fit_wrc_hcc)
+S3method(plot, fit_wrc_hcc)
+S3method(print, fit_wrc_hcc)
+S3method(print, summary_fit_wrc_hcc)
+S3method(summary, fit_wrc_hcc)
+S3method(vcov, fit_wrc_hcc)
