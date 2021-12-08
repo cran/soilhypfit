@@ -598,6 +598,7 @@ coef.fit_wrc_hcc <- function(
   ## 2020-02-26 A. Papritz correction error when computing standard errors
   ##                       for nonlinear parameters when some parameters
   ##                       are fixed
+  ## 2021-10-13 AP correction of degrees of freedom for ml and mpd method
 
 
   #   ## check consistency of object
@@ -770,8 +771,9 @@ coef.fit_wrc_hcc <- function(
 
 # ## ======================================================================
 plot.fit_wrc_hcc <- function(
-  x, what = c("wrc", "hcc"), y = NULL,
+  x, what = c("wrc", "hcc"), y = NULL, 
   subset = NULL, ylim_wc = NULL, ylim_hc = NULL,
+  head_saturation = 0.01,
   beside = identical(sum(par("mfrow")), 2L),
   pch = 1, col_points = "black",
   col_line_x = "blue", lty_x = "solid",
@@ -791,8 +793,9 @@ plot.fit_wrc_hcc <- function(
   ## 2020-06-15 A. Papritz, changes in legend text annotation
   ## 2020-08-11 A. Papritz, optional output of parameter values
   ## 2021-05-26 A. Papritz, function specific ellipsis arguments
-  ## 2021-06-12 A. Papritz  correction of error in generation of arg.value.x, arg.value.y
-  ## 2021-10-20 A. Papritz  optional user-defined ylim_wc and ylim_hc argument
+  ## 2021-06-12 A. Papritz, correction of error in generation of arg.value.x, arg.value.y
+  ## 2021-10-20 A. Papritz, optional user-defined ylim_wc and ylim_hc argument
+  ## 2021-11-22 A. Papritz, argument head_saturation for zero head values
 
   ## get names of objects assigned to x and y argument
 
@@ -926,6 +929,11 @@ plot.fit_wrc_hcc <- function(
       if(wrc){
         t.terms <- attr(xx[["model"]][["wrc"]], "terms")
         head.wc  <- model.matrix(t.terms, xx[["model"]][["wrc"]])[, 2]
+        zero.head <- head.wc <= 0.
+        if(any(zero.head)){
+          warning("zero head values replaced by 'head_saturation'")
+          head.wc[zero.head] <- head_saturation
+        }
         wc <- model.response(model.frame(t.terms, xx[["model"]][["wrc"]]))
         head.wc.fit <- exp(seq(
             min(log(head.wc)), max(log(head.wc)),
@@ -947,6 +955,11 @@ plot.fit_wrc_hcc <- function(
       if(hcc){
         t.terms <- attr(xx[["model"]][["hcc"]], "terms")
         head.hc  <- model.matrix(t.terms, xx[["model"]][["hcc"]])[, 2]
+        zero.head <- head.hc <= 0.
+        if(any(zero.head)){
+          warning("zero head values replaced by 'head_saturation'")
+          head.hc[zero.head] <- head_saturation
+        }
         hc <- model.response(model.frame(t.terms, xx[["model"]][["hcc"]]))
         head.hc.fit <- exp(seq(
             min(log(head.hc)), max(log(head.hc)),
@@ -1294,13 +1307,14 @@ plot.fit_wrc_hcc <- function(
 # ## ======================================================================
 
 lines.fit_wrc_hcc <- function(
-  x, what = c("wrc", "hcc"), id = 1, ...
+  x, what = c("wrc", "hcc"), id = 1, head_saturation = 0.01, ...
 ){
 
   ## function adds a modelled water retention curve or hydraulic
   ## conductivity function to a respective plot
 
   ## 2019-11-27 A. Papritz
+  ## 2021-11-22 A. Papritz, argument head_saturation for zero head values
 
   ## get wrc_model and hcc_model
 
@@ -1354,6 +1368,11 @@ lines.fit_wrc_hcc <- function(
   if(wrc){
     t.terms <- attr(xx[["model"]][["wrc"]], "terms")
     head.wc  <- model.matrix(t.terms, xx[["model"]][["wrc"]])[, 2]
+    zero.head <- head.wc <= 0.
+    if(any(zero.head)){
+      warning("zero head values replaced by 'head_saturation'")
+      head.wc[zero.head] <- head_saturation
+    }
     wc <- model.response(model.frame(t.terms, xx[["model"]][["wrc"]]))
     head.wc.fit <- exp(seq(
         min(log(head.wc)), max(log(head.wc)),
@@ -1371,6 +1390,11 @@ lines.fit_wrc_hcc <- function(
   if(hcc){
     t.terms <- attr(xx[["model"]][["hcc"]], "terms")
     head.hc  <- model.matrix(t.terms, xx[["model"]][["hcc"]])[, 2]
+    zero.head <- head.hc <= 0.
+    if(any(zero.head)){
+      warning("zero head values replaced by 'head_saturation'")
+      head.hc[zero.head] <- head_saturation
+    }
     hc <- model.response(model.frame(t.terms, xx[["model"]][["hcc"]]))
     head.hc.fit <- exp(seq(
         min(log(head.hc)), max(log(head.hc)),

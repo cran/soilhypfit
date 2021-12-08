@@ -58,6 +58,32 @@
 initial values for the nonlinear parameters alpha and n
 
 
+2021-10-13  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_private_functions.R (objective_nlp): correction of degrees of freedom for ml and mpd method
+* soilhypfit_S3methods.R (coef.fit_wrc_hcc): correction of degrees of freedom for ml and mpd method
+
+
 2021-10-20  Andreas Papritz  <papritz@env.ethz.ch>
 
 * soilhypfit_S3methods.R (plot.fit_wrc_hcc): optional user-defined ylim_wc and ylim_hc arguments
+
+
+2021-10-25  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (control_fit_wrc_hcc): new default value "mpd" for methods argument
+
+
+2021-11-22  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_S3methods.R (plot.fit_wrc_hcc, lines.fit_wrc_hcc): new argument head_saturation for zero head values
+
+
+2021-12-06  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (control_fit_wrc_hcc): new local constrained algorithm NLOPT_LD_CCSAQ
+
+
+2021-12-07  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (control_fit_wrc_hcc): new defaults for local unconstrained and constrained algorithms

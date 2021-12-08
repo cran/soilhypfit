@@ -1,4 +1,4 @@
-% 2020-07-21 A. Papritz
+% 2021-11-22 A. Papritz
 % cd ~/R.user.home/soilhypfit/soilhypfit_01-1/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_S3methods.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_S3methods.Rd;
 % hunspell -d en_GB-ise soilhypfitS3methods.Rd
@@ -44,6 +44,7 @@
 
 \method{plot}{fit_wrc_hcc}(x, what = c("wrc", "hcc"), y = NULL,
     subset = NULL, ylim_wc = NULL, ylim_hc = NULL,
+    head_saturation = 0.01,
     beside = identical(sum(par("mfrow")), 2L), pch = 1, col_points = "black",
     col_line_x = "blue", lty_x = "solid",
     col_line_y = "orange", lty_y = "dashed",
@@ -51,7 +52,8 @@
     xlab_hc = "head [m]", ylab_hc = "hyd. conductivity [m/d]",
     draw_legend = TRUE, draw_parameter = FALSE, cex_legend = 0.7, ...)
 
-\method{lines}{fit_wrc_hcc}(x, what = c("wrc", "hcc"), id = 1, ...)
+\method{lines}{fit_wrc_hcc}(x, what = c("wrc", "hcc"), id = 1, 
+    head_saturation = 0.01, ...)
 
 }
 
@@ -76,6 +78,9 @@
   \item{ylim_hc}{optional numeric vector of length 2 to set the range of
   hydraulic conductivity values displayed on the y-axis (default
   \code{NULL} for automatic axis scales).}
+
+  \item{head_saturation}{head value (unit m) assigned to zero head values in
+  plots with logarithmic head scale.}
 
   \item{residual_se}{a logical scalar to control whether residual standard
   errors (= standard deviations of residuals) should be returned, see

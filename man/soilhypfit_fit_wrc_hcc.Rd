@@ -559,7 +559,7 @@ op <- par(mfrow = c(3, 2))
 plot(rfit_sce, y = rfit_uglob)
 on.exit(par(op))
 
-# ... unconstrained, local optimisation algorithm NLOPT_LN_NELDERMEAD,
+# ... unconstrained, local optimisation algorithm NLOPT_LN_BOBYQA,
 #     logging iteration results to console
 rfit_uloc <- update(
   rfit_uglob,
@@ -578,7 +578,7 @@ rfit_cglob <- update(
     pcmp = control_pcmp(ncores = ncpu)))
 coef(rfit_cglob, gof = TRUE, lc = TRUE)
 
-# ... constrained, local optimisation algorithm NLOPT_LD_MMA
+# ... constrained, local optimisation algorithm NLOPT_LD_CCSAQ
 #     starting from unconstrained, locally fitted initial values
 rfit_cloc_1 <- update(
   rfit_uglob,
@@ -591,7 +591,7 @@ op <- par(mfrow = c(3, 2))
 plot(x = rfit_uloc, y = rfit_cloc_1)
 on.exit(par(op))
 
-# ... constrained, local optimisation algorithm NLOPT_LD_MMA
+# ... constrained, local optimisation algorithm NLOPT_LD_CCSAQ
 #     starting from constrained, globally fitted initial values,
 #     using sample-specific evaporation rates and limits for ratio lc/lt
 rfit_cloc_2 <- update(

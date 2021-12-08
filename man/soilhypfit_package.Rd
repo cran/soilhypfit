@@ -1,4 +1,4 @@
-% 2021-01-27 A. Papritz
+% 2021-12-06 A. Papritz
 % cd ~/R.user.home/soilhypfit/soilhypfit_01-1/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_package.Rd;  open bla.html; R CMD Rd2pdf --force soilhypfit_package.Rd;
 % hunspell -d en_GB-ize soilhypfit_package.Rd
@@ -149,7 +149,7 @@
     }{w_{K,j} = w_K * w^\prime_{K,j}}.
 
     The objective function for mpd and ml estimation is equal to
-    (\cite{Stewart et al., 1992}, eqs 14 and 15)
+    (\cite{Stewart et al., 1992}, eqs 15 and 14, respectively)
     \deqn{
       Q(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
         \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},

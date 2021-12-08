@@ -422,7 +422,10 @@ control_fit_wrc_hcc <- function(
   ## 2021-05-21 AP new default values for maxeval for settings == "clocal"
   ## 2021-05-23 AP new list of allowed algorithms for settings == "cglobal"
   ## 2021-05-21 AP new default values for maxeval for settings == "cglobal|clocal"
-
+  ## 2021-10-25 AP new default value "mpd" for methods argument
+  ## 2021-12-06 AP new local constrained algorithm NLOPT_LD_CCSAQ
+  ## 2021-12-07 AP new default local constrained algorithm NLOPT_LD_CCSAQ
+  
 #### -- check arguments
 
  ## match settings, method, wrc_model, hcc_model arguments
@@ -583,7 +586,7 @@ control_fit_wrc_hcc <- function(
 
             ## specify default algorithm of local solver
 
-            nloptr[["local_opts"]][["algorithm"]] <- "NLOPT_LN_NELDERMEAD"
+            nloptr[["local_opts"]][["algorithm"]] <- "NLOPT_LN_BOBYQA"
 
           }
 
@@ -600,7 +603,7 @@ control_fit_wrc_hcc <- function(
 
         nloptr[["local_opts"]] <- list(
           algorithm = if(length(grep("^NLOPT_GD", nloptr[["algorithm"]])))
-          "NLOPT_LD_LBFGS" else "NLOPT_LN_NELDERMEAD",
+          "NLOPT_LD_LBFGS" else "NLOPT_LN_BOBYQA",
           xtol_rel = -1.,
           ftol_rel = 1.e-6
         )
@@ -665,7 +668,7 @@ control_fit_wrc_hcc <- function(
       )
 
       if(settings == "clocal" &&
-        length(grep("COBYLA$|MMA$|SLSQP$|AUGLAG$", nloptr[["algorithm"]])) == 0L
+        length(grep("COBYLA$|MMA$|CCSAQ$|SLSQP$|AUGLAG$", nloptr[["algorithm"]])) == 0L
       ) stop(
         "wrong algorithm specified for constrained local optimization"
       )
@@ -705,7 +708,8 @@ control_fit_wrc_hcc <- function(
 
             nloptr[["local_opts"]][["algorithm"]] <- match.arg(
               toupper(nloptr[["local_opts"]][["algorithm"]]), c(
-                "NLOPT_LN_COBYLA", "NLOPT_LD_LBFGS", "NLOPT_LD_MMA", "NLOPT_LD_SLSQP"
+                "NLOPT_LN_COBYLA", "NLOPT_LD_LBFGS", 
+                "NLOPT_LD_MMA", "NLOPT_LD_CCSAQ", "NLOPT_LD_SLSQP"
               )
             )
 
@@ -723,7 +727,7 @@ control_fit_wrc_hcc <- function(
 
               if(
                 length(
-                  grep("MMA$|SLSQP$|LBFGS", nloptr[["local_opts"]][["algorithm"]])
+                  grep("MMA$|CCSAQ$|SLSQP$|LBFGS", nloptr[["local_opts"]][["algorithm"]])
                 ) == 0L
               ) stop("wrong algorithm for local solver")
 
@@ -788,9 +792,9 @@ control_fit_wrc_hcc <- function(
       ## choose default local optimization algorithm
 
       if(identical(settings, "ulocal")){
-        nloptr[["algorithm"]] <- "NLOPT_LN_NELDERMEAD"
+        nloptr[["algorithm"]] <- "NLOPT_LN_BOBYQA"
       } else {
-        nloptr[["algorithm"]] <- "NLOPT_LD_MMA"
+        nloptr[["algorithm"]] <- "NLOPT_LD_CCSAQ"
       }
 
     }

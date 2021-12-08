@@ -255,7 +255,7 @@ ini_param <- cbind(
   ksat
 )
 # constrained estimation by restricting ratio Lc/Lt to [0.5, 2]
-# (local constrained optimisation algorithm NLOPT_LD_MMA)
+# (local constrained optimisation algorithm NLOPT_LD_CCSAQ)
 # k0 fixed at measured ksat values
 rsfs_cloc <- update(
   rsfs_uglob,

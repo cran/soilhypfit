@@ -414,8 +414,8 @@ control_pcmp(ncores = detectCores() - 1L,
      \item{\code{"clocal"}:}{constrained optimisation by any of the local
      algorithms\cr (\code{"NLOPT_LN_COBYLA"}, \code{"NLOPT_LN_AUGLAG"},
      \code{"NLOPT_LD_AUGLAG"}, \code{"NLOPT_LD_SLSQP"},\cr
-     \code{"NLOPT_LD_MMA"}) of NLopt that allow for inequality
-     constraints.}
+     \code{"NLOPT_LD_MMA"}), \code{"NLOPT_LD_CCSAQ"}) of NLopt that allow
+     for inequality constraints.}
 
      \item{\code{"sce"}:}{unconstrained optimisation by the global
      algorithm implemented in \code{\link[SoilHyP]{SCEoptim}}.}
@@ -462,7 +462,7 @@ control_pcmp(ncores = detectCores() - 1L,
 nloptr = control_nloptr(
   algorithm = "NLOPT_GN_MLSL_LDS",
   local_opts = list(
-    algorithm = "NLOPT_LN_NELDERMEAD",
+    algorithm = "NLOPT_LN_BOBYQA",
     xtol_rel = -1.,
     ftol_rel = 1.e-6
   ),
@@ -505,7 +505,7 @@ nloptr = control_nloptr(
 
         \preformatted{
 nloptr = control_nloptr(
-  algorithm = "NLOPT_LN_NELDERMEAD",
+  algorithm = "NLOPT_LN_BOBYQA",
   xtol_rel = -1,
   ftol_rel = 1.e-8,
   maxeval = 250,
@@ -518,7 +518,7 @@ nloptr = control_nloptr(
 
         \preformatted{
 nloptr = control_nloptr(
-  algorithm = "NLOPT_LD_MMA",
+  algorithm = "NLOPT_LD_CCSAQ",
   xtol_rel = -1,
   ftol_rel = 1.e-8,
   maxeval = 1000,
@@ -686,7 +686,7 @@ coef(
 
 plot(fit1, y = fit2)
 
-# ... with unconstrained, local optimisation algorithm NLOPT_LN_NELDERMEAD,
+# ... with unconstrained, local optimisation algorithm NLOPT_LN_BOBYQA,
 #     initial values for alpha and n are computed from data and
 #     transformed nonlinear parameters are estimated without box-constraints
 coef(
