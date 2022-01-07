@@ -1,5 +1,5 @@
-% 2021-10-27 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-1/pkg/man
+% 2022-01-02 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_fit_wrc_hcc.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_fit_wrc_hcc.Rd;
 % hunspell -d en_GB-ise fit_wrc_hcc.Rd
 
@@ -118,18 +118,18 @@ default_fit_param(
   \code{\link{na.exclude}} can be useful.}
 
   \item{param}{an optional named numeric vector (or a numeric matrix or a
-  dataframe with specified column names, see \emph{Details}) with initial
-  values for the model parameters.  Currently, \code{param} may have
-  elements (or columns) named \code{"alpha"}, \code{"n"}, \code{"tau"},
-  \code{"thetar"}, \code{"thetas"}, \code{"k0"}, see \code{\link{wc_model}}
-  and \code{\link{hc_model}} and \emph{Details}.  For consistency with
-  other quantities, the unit of \eqn{\alpha} should be \bold{1/meter}
-  [\eqn{\mathrm{m}^{-1}}{m^-1}] and the unit of \eqn{K_0} \bold{meter/day}
-  [\eqn{\mathrm{m}\,\mathrm{d}^{-1}}{m d^-1}].}
+  dataframe with specified row and column names, see \emph{Details}) with
+  initial values for the model parameters.  Currently, \code{param} may
+  have elements (or columns) named \code{"alpha"}, \code{"n"},
+  \code{"tau"}, \code{"thetar"}, \code{"thetas"}, \code{"k0"}, see
+  \code{\link{wc_model}} and \code{\link{hc_model}} and \emph{Details}.
+  For consistency with other quantities, the unit of \eqn{\alpha} should be
+  \bold{1/meter} [\eqn{\mathrm{m}^{-1}}{m^-1}] and the unit of \eqn{K_0}
+  \bold{meter/day} [\eqn{\mathrm{m}\,\mathrm{d}^{-1}}{m d^-1}].}
 
   \item{lower_param}{an optional named numeric vector (or a numeric matrix
-  or a dataframe with specified column names, see \emph{Details}) with
-  lower bounds for the parameters of the models.  Currently,
+  or a dataframe with specified row and column names, see \emph{Details})
+  with lower bounds for the parameters of the models.  Currently,
   \code{lower_param} may have elements (or columns) named \code{"alpha"},
   \code{"n"}, \code{"tau"}, \code{"thetar"}, \code{"thetas"}, \code{"k0"},
   see \code{\link{wc_model}}, \code{\link{hc_model}} and
@@ -142,44 +142,44 @@ default_fit_param(
   \eqn{\theta_s}.}
 
   \item{upper_param}{an optional named numeric vector (or a numeric matrix
-  or a dataframe with specified column names, see \emph{Details}) with
-  upper bounds for the
-  parameters of the models.  Currently, \code{upper_param} may have
-  elements (or columns) named \code{"alpha"}, \code{"n"}, \code{"tau"},
-  \code{"thetar"}, \code{"thetas"}, \code{"k0"}, see
-  \code{\link{wc_model}}, \code{\link{hc_model}} and
+  or a dataframe with specified row and column names, see \emph{Details})
+  with upper bounds for the parameters of the models.  Currently,
+  \code{upper_param} may have elements (or columns) named \code{"alpha"},
+  \code{"n"}, \code{"tau"}, \code{"thetar"}, \code{"thetas"}, \code{"k0"},
+  see \code{\link{wc_model}}, \code{\link{hc_model}} and
   \code{\link{param_boundf}}.  For consistency with other quantities, the
   unit of \eqn{\alpha} should be \bold{1/meter}
   [\eqn{\mathrm{m}^{-1}}{m^-1}] and the unit of \eqn{K_0} \bold{meter/day}
   [\eqn{\mathrm{m}\,\mathrm{d}^{-1}}{m d^-1}].  If upper bounds are
   specified for \eqn{\theta_s} but not for \eqn{\theta_r} then the upper
-  bounds specified for \eqn{\theta_s} will also be used for \eqn{\theta_r}.}
+  bounds specified for \eqn{\theta_s} will also be used for
+  \eqn{\theta_r}.}
 
   \item{fit_param}{a named logical vector (or a logical matrix or a
-  dataframe with specified column names, see \emph{Details}) containing
-  flags that control whether model parameters are estimated (\code{TRUE})
-  or kept fixed at the initial values (\code{FALSE}) as specified in
-  \code{param}.  This vector can be generated easily by the function
-  \code{default_fit_param}.  Currently, \code{fit_param} may have elements
-  (or columns) named \code{"alpha"}, \code{"n"}, \code{"tau"},\cr
+  dataframe with specified row and column names, see \emph{Details})
+  containing flags that control whether model parameters are estimated
+  (\code{TRUE}) or kept fixed at the initial values (\code{FALSE}) as
+  specified in \code{param}.  This vector can be generated easily by the
+  function \code{default_fit_param}.  Currently, \code{fit_param} may have
+  elements (or columns) named \code{"alpha"}, \code{"n"}, \code{"tau"},\cr
   \code{"thetar"}, \code{"thetas"}, \code{"k0"}, see \emph{Details},
   \code{\link{wc_model}} and \code{\link{hc_model}}.}
 
-  \item{e0}{a numeric scalar (or vector, see \emph{Details}) with the stage-I rate of
-  evaporation \eqn{E_0} from a soil (default \eqn{2.5\cdot 10^{-3} \
-  \mathrm{m}\,\mathrm{d}^{-1}}{0.0025 m d^-1}) required to evaluate the
-  \emph{characteristic evaporative length}, see
+  \item{e0}{a numeric scalar (or named vector, see \emph{Details}) with the
+  stage-I rate of evaporation \eqn{E_0} from a soil (default \eqn{2.5\cdot
+  10^{-3} \ \mathrm{m}\,\mathrm{d}^{-1}}{0.0025 m d^-1}) required to
+  evaluate the \emph{characteristic evaporative length}, see
   \code{\link{evaporative-length}} and \code{\link{soilhypfitIntro}}.  For
   consistency with other quantities, the unit of \eqn{E_0} should
-  \bold{meter/day} [\eqn{\mathrm{m}\,\mathrm{d}^{-1}}{m d^-1}]. Note
-  that \code{e0} is ignored when an unconstrained nonlinear
-  optimisation algorithm is chosen (argument \code{settings} of
-  \code{\link{control_fit_wrc_hcc}} equal to \code{"uglobal"},
-  \code{"sce"} or \code{"ulocal"}).}
+  \bold{meter/day} [\eqn{\mathrm{m}\,\mathrm{d}^{-1}}{m d^-1}].  Note that
+  \code{e0} is ignored when an unconstrained nonlinear optimisation
+  algorithm is chosen (argument \code{settings} of
+  \code{\link{control_fit_wrc_hcc}} equal to \code{"uglobal"}, \code{"sce"}
+  or \code{"ulocal"}).}
 
   \item{ratio_lc_lt_bound}{a named numeric vector of length 2 (or a matrix
-  with two columns, see \emph{Details}) defining the default \code{lower}
-  and \code{upper} bounds of the ratio
+  with specified rownames and two columns, see \emph{Details}) defining the
+  default \code{lower} and \code{upper} bounds of the ratio
   \eqn{L_\mathrm{c}/L_\mathrm{t}}{L_c/L_t} (\cite{Lehmann et al., 2008,
   2020}) for constrained estimation of the \emph{nonlinear} parameters
   \mbvec{\nu}{T}{^T}{=(\alpha, n, \tau)} (default values 0.5 (\code{lower})
@@ -268,8 +268,8 @@ default_fit_param(
 
     The function \code{fit_wrc_hcc} estimates model parameters of water
     retention curves and/or hydraulic conductivity functions by
-    \emph{maximum posterior density} (mpd, default) \emph{maximum likelihood}
-    (ml) or \emph{nonlinear least squares} (wls), see argument
+    \emph{maximum likelihood} (ml, default) \emph{maximum posterior density}
+    (mpd) or \emph{nonlinear least squares} (wls), see argument
     \code{method} of \code{\link{control_fit_wrc_hcc}}.  Measurements must
     be available for at least one of the two material functions.  If one
     type of data is missing then the respective \code{formula},
@@ -308,8 +308,11 @@ default_fit_param(
     specific information per sample should be used then \code{param},
     \code{lower_param}, \code{upper_param}, \code{fit_param} and
     \code{ratio_lc_lt_bound} must be matrices (or data frames) with as many
-    rows as there are soil samples, and \code{e0} is a vector with as many
-    elements as there are soil samples.
+    rows as there are soil samples.  The matrices (or data.frames) must
+    have rownames matching the levels of the factor \code{id} defining the
+    soil samples.  \code{e0} must be a named vector with as many elements
+    as there are soil samples and the names must again match the levels of
+    \code{id}.
 
     By default, \code{fit_wrc_hcc} processes data of multiple soil samples
     in parallel, see \code{\link{control_pcmp}} for options to control
@@ -367,7 +370,7 @@ default_fit_param(
       attributes \code{ssq_wc} and \code{ssq_hc} are the respective
       residual sums of squares \eqn{Q_\theta} and \eqn{Q_K}, see
       \code{\link{soilhypfitIntro}}.
-      
+
       \item{\code{gradient}}: the gradient of the objective function at the
       solution with respect to the (possibly transformed) nonlinear parameters.
 
@@ -427,6 +430,30 @@ default_fit_param(
 
   }
 
+  \item{sample_id_variable}{the name of the variable defining the samples.}
+
+  \item{wrc}{logical scalar signalling whether water retention data were
+  used to estimate the parameters.}
+
+  \item{wrc_formula}{formula defining the variables for water content and
+  hydraulic head of the water retention data (\code{NULL} if not \code{wrc}
+  equal to \code{FALSE}).}
+
+  \item{wrc_mf}{unevaluated call of \code{\link[stats]{model.frame}} to
+  build the modelframe for the water retention data (\code{NULL} if
+  \code{wrc} equal to \code{FALSE}).}
+
+  \item{wrc}{logical scalar signalling whether water retention data were
+  used to estimate the parameters.}
+
+  \item{hcc_formula}{formula defining the variables for hydraulic
+  conductivity and hydraulic head of the hydraulic conductivity data
+  (\code{NULL} if not \code{hcc} equal to \code{FALSE}).}
+
+  \item{hcc_mf}{unevaluated call of \code{\link[stats]{model.frame}} to
+  build the modelframe for the water retention data (\code{NULL} if
+  \code{hcc} equal to \code{FALSE}).}
+
   \item{control}{a list with the options used to control
   \code{fit_wrc_hcc}, see \code{\link{control_fit_wrc_hcc}}.}
 
@@ -483,6 +510,9 @@ default_fit_param(
 
   \code{\link{vcov}} for computing (co-)variances of the estimated
   nonlinear parameters;
+
+  \code{\link{prfloglik_sample}} for profile loglikelihood
+  computations;
 
   \code{\link{wc_model}} and \code{\link{hc_model}} for currently
   implemented models for soil water retention curves and hydraulic
@@ -597,11 +627,11 @@ on.exit(par(op))
 rfit_cloc_2 <- update(
   rfit_uglob,
   param = as.matrix(coef(rfit_cglob, what = "nonlinear")),
-  e0 = c(0.002, 0.0025, 0.003),
+  e0 = c("1" = 0.002, "2" = 0.0025, "3" = 0.003),
   ratio_lc_lt_bound = rbind(
-    c(lower = 0.7, upper = 2),
-    c(lower = 0.8, upper = 1.4),
-    c(lower = 0.8, upper = 2)
+    "1" = c(lower = 0.7, upper = 2),
+    "2" = c(lower = 0.8, upper = 1.4),
+    "3" = c(lower = 0.8, upper = 2)
   ),
   control = control_fit_wrc_hcc(
     settings = "clocal", pcmp = control_pcmp(ncores = ncpu)))
@@ -609,17 +639,18 @@ coef(rfit_cloc_2, gof = TRUE, lc = TRUE, e0 = TRUE)
 
 # ... global optimisation algorithm NLOPT_GN_MLSL
 #     with sample-specific box-constraints
+
 rfit_uglob_bc <- update(
   rfit_uglob,
   lower_param = rbind(
-    c(alpha = 2.4, n = 1.11, thetar = 0.2, thetas = 0.6),
-    c(alpha = 1.2, n = 1.12, thetar = 0.2, thetas = 0.6),
-    c(alpha = 1.2, n = 1.13, thetar = 0.2, thetas = 0.6)
+    "1" = c(alpha = 2.4, n = 1.11, thetar = 0.2, thetas = 0.6),
+    "2" = c(alpha = 1.2, n = 1.12, thetar = 0.2, thetas = 0.6),
+    "3" = c(alpha = 1.2, n = 1.13, thetar = 0.2, thetas = 0.6)
   ),
   upper_param = rbind(
-    c(alpha = 20.1, n = 2.51, thetar = 0.6, thetas = 0.6),
-    c(alpha = 20.2, n = 1.5,  thetar = 0.6, thetas = 0.6),
-    c(alpha = 1.3, n = 2.53,  thetar = 0.6, thetas = 0.6)
+    "1" = c(alpha = 20.1, n = 2.51, thetar = 0.6, thetas = 0.6),
+    "2" = c(alpha = 20.2, n = 1.5,  thetar = 0.6, thetas = 0.6),
+    "3" = c(alpha = 1.3, n = 2.53,  thetar = 0.6, thetas = 0.6)
   )
 )
 coef(rfit_uglob, gof = TRUE)

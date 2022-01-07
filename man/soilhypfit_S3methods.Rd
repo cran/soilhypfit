@@ -1,5 +1,5 @@
-% 2021-11-22 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-1/pkg/man
+% 2022-01-07 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_S3methods.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_S3methods.Rd;
 % hunspell -d en_GB-ise soilhypfitS3methods.Rd
 
@@ -25,8 +25,8 @@
 
 % description
 
-\description{This page documents the methods \code{coef}, \code{summary},
-\code{print}, \code{plot} and \code{lines} for the class
+\description{This page documents the methods \code{coef}, 
+\code{summary}, \code{print}, \code{plot} and \code{lines} for the class
 \code{fit_wrc_hcc}.}
 
 % usage
@@ -52,7 +52,7 @@
     xlab_hc = "head [m]", ylab_hc = "hyd. conductivity [m/d]",
     draw_legend = TRUE, draw_parameter = FALSE, cex_legend = 0.7, ...)
 
-\method{lines}{fit_wrc_hcc}(x, what = c("wrc", "hcc"), id = 1, 
+\method{lines}{fit_wrc_hcc}(x, what = c("wrc", "hcc"), id = 1,
     head_saturation = 0.01, ...)
 
 }
@@ -70,17 +70,6 @@
   \item{subset}{an integer, character or logical vector to the choose the
   soil samples for which data and model curves are displayed or extracted.
   Defaults to \code{NULL} which displays results for all soil samples.}
-
-  \item{ylim_wc}{optional numeric vector of length 2 to set the range of
-  water content values displayed on the y-axis (default \code{NULL} for
-  automatic axis scales).}
-
-  \item{ylim_hc}{optional numeric vector of length 2 to set the range of
-  hydraulic conductivity values displayed on the y-axis (default
-  \code{NULL} for automatic axis scales).}
-
-  \item{head_saturation}{head value (unit m) assigned to zero head values in
-  plots with logarithmic head scale.}
 
   \item{residual_se}{a logical scalar to control whether residual standard
   errors (= standard deviations of residuals) should be returned, see
@@ -104,6 +93,17 @@
   bounds of the ratio \eqn{L_\mathrm{c}/L_\mathrm{t}}{L_c/L_t} should be
   returned. This is only effective for constrained estimation, see
   \code{\link{evaporative-length}}.}
+
+  \item{ylim_wc}{optional numeric vector of length 2 to set the range of
+  water content values displayed on the y-axis (default \code{NULL} for
+  automatic axis scales).}
+
+  \item{ylim_hc}{optional numeric vector of length 2 to set the range of
+  hydraulic conductivity values displayed on the y-axis (default
+  \code{NULL} for automatic axis scales).}
+
+  \item{head_saturation}{head value (unit m) assigned to zero head values in
+  plots with logarithmic head scale.}
 
   \item{beside}{a logical scalar controlling whether water retention curves
   and hydraulic conductivity functions of a sample should be plotted side
@@ -160,8 +160,9 @@
 
 \details{
 
-  Residual standard errors and standard errors of the nonlinear parameters
-  are computed only for mpd and ml estimates, see
+  Residual standard errors, standard errors of the nonlinear parameters and
+  confidence intervals based on the asymptotic normal distribution are
+  computed only for mpd and ml estimates, see
   \code{\link{soilhypfitIntro}}, \code{\link{control_fit_wrc_hcc}} and
   \code{\link{vcov}}.
 
@@ -240,6 +241,9 @@
   \code{\link{vcov}} for computing (co-)variances of the estimated
   nonlinear parameters;
 
+  \code{\link{prfloglik_sample}} for profile loglikelihood
+  computations;
+
   \code{\link{wc_model}} and \code{\link{hc_model}} for currently
   implemented models for soil water retention curves and hydraulic
   conductivity functions;
@@ -265,12 +269,12 @@ if(interactive()) ncpu <- parallel::detectCores() - 1L else ncpu <- 1L
 # sample 2: use only water content data
 # sample 3: use both types of data
 rfit_uglob <- fit_wrc_hcc(
-  wrc_formula = wc ~ head | id,
-  hcc_formula = hc ~ head | id,
-  wrc_subset = id != 1,
-  hcc_subset = id != 2,
-  data = sim_wrc_hcc,
-  control = control_fit_wrc_hcc(pcmp = control_pcmp(ncores = ncpu)))
+  wrc_formula = wc ~ head | id, hcc_formula = hc ~ head | id,
+  wrc_subset = id != 1, hcc_subset = id != 2,
+  data = sim_wrc_hcc, fit_param = default_fit_param(tau = TRUE),
+  control = control_fit_wrc_hcc(param_bound = param_boundf(
+      alpha = c(0.00001, 50), n = c(1.0001, 7), tau = c(-1, 5)
+    ), pcmp = control_pcmp(ncores = ncpu)))
 print(rfit_uglob)
 summary(rfit_uglob)
 coef(rfit_uglob, what = "nonlinear")
@@ -279,6 +283,7 @@ coef(vcov(rfit_uglob), status = TRUE, se = FALSE)
 op <- par(mfrow = c(3, 2))
 plot(rfit_uglob)
 on.exit(par(op))
+
 }
 }
 

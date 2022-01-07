@@ -184,43 +184,66 @@ param_boundf <- function(
 ##  ##############################################################################
 
 check_param_boundf <- function(
-  y
+  y, compare_thetar_thetas = TRUE
 ){
 
   ## function checks whether boundaries for box constraints are valid
 
   ## 2021-02-27 A. Papritz
 
+  ## 2021-12-26 AP possibility to check incomplete parameter
+  ##               boundaries
+  ## 2022-01-03 AP optional cross-comparison of boundaries of
+  ##               thetar and thetas
+
   if(
-    y[["thetar"]][1] < 0. || y[["thetar"]][2] > 1. ||
-    y[["thetar"]][1] > y[["thetar"]][2]
+    !is.null(y[["thetar"]]) && (
+      y[["thetar"]][1] < 0. || y[["thetar"]][2] > 1. ||
+      y[["thetar"]][1] > y[["thetar"]][2]
+    )
   ) stop(
     "invalid range of possible values for parameter 'thetar'"
   )
 
   if(
-    y[["thetas"]][1] < 0. || y[["thetas"]][2] > 1. ||
-    y[["thetas"]][1] > y[["thetas"]][2]
+    !is.null(y[["thetas"]]) && (
+      y[["thetas"]][1] < 0. || y[["thetas"]][2] > 1. ||
+      y[["thetas"]][1] > y[["thetas"]][2]
+    )
   ) stop(
     "invalid range of possible values for parameter 'thetas'"
   )
 
   if(
-    y[["thetas"]][1] < y[["thetar"]][1] ||
-    y[["thetar"]][2] > y[["thetas"]][2]
+    compare_thetar_thetas && !is.null(y[["thetar"]]) && !is.null(y[["thetas"]]) && (
+      y[["thetas"]][1] < y[["thetar"]][1] ||
+      y[["thetar"]][2] > y[["thetas"]][2]
+    )
   ) stop(
     "invalid ranges of possible values for parameters 'thetar' and 'thetas'"
   )
 
-  if(y[["alpha"]][1] <= 0. || y[["alpha"]][1] > y[["alpha"]][2]) stop(
+  if(
+    !is.null(y[["alpha"]]) && (
+      y[["alpha"]][1] <= 0. || y[["alpha"]][1] > y[["alpha"]][2]
+    )
+  ) stop(
     "invalid range of possible values for parameter 'alpha'"
   )
 
-  if(y[["n"]][1] < 1. || y[["n"]][1] > y[["n"]][2]) stop(
+  if(
+    !is.null(y[["n"]]) && (
+      y[["n"]][1] < 1. || y[["n"]][1] > y[["n"]][2]
+    )
+  ) stop(
     "invalid range of possible values for parameter 'n'"
   )
 
-  if(y[["k0"]][1] < 0.|| y[["k0"]][1] > y[["k0"]][2]) stop(
+  if(
+    !is.null(y[["k0"]]) && (
+      y[["k0"]][1] < 0.|| y[["k0"]][1] > y[["k0"]][2]
+    )
+  ) stop(
     "invalid range of possible values for parameter 'k0'"
   )
 
@@ -388,7 +411,7 @@ control_pcmp <-
 
 control_fit_wrc_hcc <- function(
   settings = c("uglobal", "ulocal", "clocal", "cglobal", "sce"),
-  method = c("mpd", "ml", "wls"),
+  method = c("ml", "mpd", "wls"),
   hessian,
   nloptr = control_nloptr(),
   sce = control_sce(),
@@ -425,7 +448,8 @@ control_fit_wrc_hcc <- function(
   ## 2021-10-25 AP new default value "mpd" for methods argument
   ## 2021-12-06 AP new local constrained algorithm NLOPT_LD_CCSAQ
   ## 2021-12-07 AP new default local constrained algorithm NLOPT_LD_CCSAQ
-  
+  ## 2021-12-22 AP new default value "ml" for methods argument
+
 #### -- check arguments
 
  ## match settings, method, wrc_model, hcc_model arguments
@@ -708,7 +732,7 @@ control_fit_wrc_hcc <- function(
 
             nloptr[["local_opts"]][["algorithm"]] <- match.arg(
               toupper(nloptr[["local_opts"]][["algorithm"]]), c(
-                "NLOPT_LN_COBYLA", "NLOPT_LD_LBFGS", 
+                "NLOPT_LN_COBYLA", "NLOPT_LD_LBFGS",
                 "NLOPT_LD_MMA", "NLOPT_LD_CCSAQ", "NLOPT_LD_SLSQP"
               )
             )
@@ -955,6 +979,12 @@ fit_wrc_hcc <- function(
   ## 2021-05-22 AP check whether inequality constraints are satisfied
   ##               for constrained estimation
   ## 2021-06-04 AP correction of error when passing param and fit_param to input.data
+  ## 2021-12-22 AP warning if lower_param or upper_param are vectors
+  ## 2021-12-27 AP check that order of rows in param, fit_param, etc is the same
+  ##               as order of samples in output
+  ## 2021-12-29 AP sample_id_variable stored as additional component in output
+  ##               new method to match input.data and sample-specific data for param,
+  ##               fit_param, lower_param, upper_param, e0 ratio_lc_lt_bound
 
   if(!is.finite(verbose)) browser()
 
@@ -982,11 +1012,13 @@ fit_wrc_hcc <- function(
 
   all.param.name <- names(default_fit_param())
 
+  ## param
+
   names.param <- NULL
   if(!is.null(param)){
     if(is.data.frame(param)){
       if(!all(sapply(param, is.numeric))) stop(
-        "'param' must a dataframe with numeric variables"
+        "'param' must be a dataframe or a matrix with numeric variables"
       )
       param <- as.matrix(param)
     }
@@ -1000,9 +1032,11 @@ fit_wrc_hcc <- function(
     colnames(param) <- names.param
   }
 
+  ## fit_param
+
   if(is.data.frame(fit_param)){
     if(!all(sapply(fit_param, is.logical))) stop(
-      "'fit_param' must a dataframe with logical variables"
+      "'fit_param' must be a dataframe or a matrix with logical variables"
     )
     fit_param <- as.matrix(fit_param)
   }
@@ -1017,13 +1051,22 @@ fit_wrc_hcc <- function(
     colnames(fit_param) <- names.fit_param
   }
 
+  ## lower_param
+
   if(is.data.frame(lower_param)){
     if(!all(sapply(lower_param, is.numeric))) stop(
-      "'lower_param' must a dataframe with numeric variables"
+      "'lower_param' must be a dataframe or a matrix with numeric variables"
     )
     lower_param <- as.matrix(lower_param)
   }
-  if(is.vector(lower_param)) lower_param <- t(as.matrix(lower_param))
+  if(is.vector(lower_param)){
+    warning(
+      "'lower_param' is a vector; a better way to define parameter bounds ",
+      "is to use the function 'param_boundf', see help(control_fit_wrc_hcc)"
+    )
+    lower_param <- t(as.matrix(lower_param))
+  }
+
   names.lower_param <- colnames(lower_param)
   if(!missing(lower_param)){
     names.lower_param <- sapply(
@@ -1045,13 +1088,22 @@ fit_wrc_hcc <- function(
 
   }
 
+  ## upper_param
+
   if(is.data.frame(upper_param)){
     if(!all(sapply(upper_param, is.numeric))) stop(
-      "'upper_param' must a dataframe with numeric variables"
+      "'upper_param' must a dataframe or a matrix with numeric variables"
     )
     upper_param <- as.matrix(upper_param)
   }
-  if(is.vector(upper_param)) upper_param <- t(as.matrix(upper_param))
+  if(is.vector(upper_param)){
+    warning(
+      "'upper_param' is a vector; a better way to define parameter bounds ",
+      "is to use the function 'param_boundf', see help(control_fit_wrc_hcc)"
+    )
+    upper_param <- t(as.matrix(upper_param))
+  }
+
   names.upper_param <- colnames(upper_param)
   if(!missing(upper_param)){
     names.upper_param <- sapply(
@@ -1216,7 +1268,7 @@ fit_wrc_hcc <- function(
 
 #### -- get variable names for water retention and hydraulic conductivity curves
 
-  wrc.mf <- NULL
+  wrc_mf <- NULL
   if(wrc){
 
     ## variable names for wc, head and sample id
@@ -1251,11 +1303,11 @@ fit_wrc_hcc <- function(
       ),
       names(mf), 0L
     )
-    wrc.mf <- mf[c(1L, m.wrc)]
+    wrc_mf <- mf[c(1L, m.wrc)]
 
     ## get names of specified arguments
 
-    nmes <- names(wrc.mf)
+    nmes <- names(wrc_mf)
 
     ## handle subset and weights arguments
 
@@ -1267,7 +1319,7 @@ fit_wrc_hcc <- function(
         )
         ex <- match("subset", nmes)
         nmes <- nmes[!nmes == "wrc_subset"]
-        wrc.mf <- wrc.mf[-ex]
+        wrc_mf <- wrc_mf[-ex]
       } else {
         nmes[nmes == "wrc_subset"] <- "subset"
       }
@@ -1281,7 +1333,7 @@ fit_wrc_hcc <- function(
         )
         ex <- match("weights", nmes)
         nmes <- nmes[!nmes == "wrc_weights"]
-        wrc.mf <- wrc.mf[-ex]
+        wrc_mf <- wrc_mf[-ex]
       } else {
         nmes[nmes == "wrc_weights"] <- "weights"
       }
@@ -1293,18 +1345,20 @@ fit_wrc_hcc <- function(
 
     ## set names of specified argument of function call
 
-    names(wrc.mf) <- nmes
+    names(wrc_mf) <- nmes
 
     ## set remaing argument of call and prepare evalution of model frame
 
-    wrc.mf[["formula"]] <- wrc_formula
-    wrc.mf[["drop.unused.levels"]] <- TRUE
-    wrc.mf[["data"]] <- as.name("input.data")
-    wrc.mf[[1L]] <- as.name("model.frame")
+    wrc_mf[["formula"]] <- wrc_formula
+    wrc_mf[["drop.unused.levels"]] <- TRUE
+    wrc_mf[["data"]] <- as.name("input.data")
+    wrc_mf[[1L]] <- as.name("model.frame")
 
+  } else {
+    wrc_formula <- NULL
   }
 
-  hcc.mf <- NULL
+  hcc_mf <- NULL
   if(hcc){
 
     ## variable names for hydraulic conductivity, head and sample id
@@ -1333,7 +1387,7 @@ fit_wrc_hcc <- function(
         identical(length(wrc.variables), 3L) &&
         !identical(wrc.variables[3], hcc.variables[3])
       ) stop(
-        "variable that codes sample differs for water retention and hydraulic conductivity curves"
+        "variable that defines samples differs for water retention and hydraulic conductivity curves"
       )
 
     }
@@ -1354,11 +1408,11 @@ fit_wrc_hcc <- function(
       ),
       names(mf), 0L
     )
-    hcc.mf <- mf[c(1L, m.hcc)]
+    hcc_mf <- mf[c(1L, m.hcc)]
 
     ## get names of specified arguments
 
-    nmes <- names(hcc.mf)
+    nmes <- names(hcc_mf)
 
     ## handle subset and weights arguments
 
@@ -1370,7 +1424,7 @@ fit_wrc_hcc <- function(
         )
         ex <- match("subset", nmes)
         nmes <- nmes[!nmes == "hcc_subset"]
-        hcc.mf <- hcc.mf[-ex]
+        hcc_mf <- hcc_mf[-ex]
       } else {
         nmes[nmes == "hcc_subset"] <- "subset"
       }
@@ -1384,7 +1438,7 @@ fit_wrc_hcc <- function(
         )
         ex <- match("weights", nmes)
         nmes <- nmes[!nmes == "hcc_weights"]
-        hcc.mf <- hcc.mf[-ex]
+        hcc_mf <- hcc_mf[-ex]
       } else {
         nmes[nmes == "hcc_weights"] <- "weights"
       }
@@ -1396,15 +1450,17 @@ fit_wrc_hcc <- function(
 
     ## set names of specified argument of function call
 
-    names(hcc.mf) <- nmes
+    names(hcc_mf) <- nmes
 
     ## set remaing argument of call and prepare evalution of model frame
 
-    hcc.mf[["formula"]] <- hcc_formula
-    hcc.mf[["drop.unused.levels"]] <- TRUE
-    hcc.mf[["data"]] <- as.name("input.data")
-    hcc.mf[[1L]] <- as.name("model.frame")
+    hcc_mf[["formula"]] <- hcc_formula
+    hcc_mf[["drop.unused.levels"]] <- TRUE
+    hcc_mf[["data"]] <- as.name("input.data")
+    hcc_mf[[1L]] <- as.name("model.frame")
 
+  } else {
+    hcc_formula <- NULL
   }
 
 #### -- prepare ratio_lc_lt_bound
@@ -1440,68 +1496,145 @@ fit_wrc_hcc <- function(
 
   nmes.samples <- names(input.data)
 
-  ## augment list of dataframes with param, fit_param, e0 and
-  ## ratio_lc_lt_bound components
+  ## check that param, fit_param, lower_param, upper_param, e0 and
+  ## ratio_lc_lt_bound have valid (row)names if they contain
+  ## sample-specific information, i.e. when they are matrices or a vector
 
-  if(!is.null(param) && NROW(param) > 1L && !identical(NROW(param), length(input.data))) stop(
-    "number of rows of 'param' and number of samples differs"
-  )
+  if(length(input.data) > 1L){
 
-  if(NROW(fit_param) > 1L && !identical(NROW(fit_param), length(input.data))) stop(
-    "number of rows of 'fit_param' and number of samples differs"
-  )
+    if(!is.null(param) && NROW(param) > 1L){
+      if(is.null(rownames(param))) stop(
+        "'param' is a matrix with sample-specific data ",
+        "but rownames are missing"
+      )
+      if(!all(nmes.samples %in% rownames(param))) stop(
+        "'param' lacks data for some samples"
+      )
+    }
 
-  if(NROW(lower_param) > 1L && !identical(NROW(lower_param), length(input.data))) stop(
-    "number of rows of 'lower_param' and number of samples differs"
-  )
+    if(NROW(fit_param) > 1L){
+      if(is.null(rownames(fit_param))) stop(
+        "'fit_param' is a matrix with sample-specific data ",
+        "but rownames are missing"
+      )
+      if(!all(nmes.samples %in% rownames(fit_param))) stop(
+        "'fit_param' lacks data for some samples"
+      )
+    }
 
-  if(NROW(upper_param) > 1L && !identical(NROW(upper_param), length(input.data))) stop(
-    "number of rows of 'upper_param' and number of samples differs"
-  )
+    if(!is.null(lower_param) && NROW(lower_param) > 1L){
+      if(is.null(rownames(lower_param))) stop(
+        "'lower_param' is a matrix with sample-specific data ",
+        "but rownames are missing"
+      )
+      if(!all(nmes.samples %in% rownames(lower_param))) stop(
+        "'lower_param' lacks data for some samples"
+      )
+    }
 
-  if(length(e0) > 1L && !identical(length(e0), length(input.data))) stop(
-    "number of elements of 'e0' and number of samples differs"
-  )
+    if(!is.null(upper_param) && NROW(upper_param) > 1L){
+      if(is.null(rownames(upper_param))) stop(
+        "'upper_param' is a matrix with sample-specific data ",
+        "but rownames are missing"
+      )
+      if(!all(nmes.samples %in% rownames(upper_param))) stop(
+        "'upper_param' lacks data for some samples"
+      )
+    }
 
-  if(NROW(ratio_lc_lt_bound) > 1L  &&
-    !identical(NROW(ratio_lc_lt_bound), length(input.data))
-  )  stop(
-    "number of elements of 'ratio_lc_lt_bound' and number of samples differs"
-  )
+    if(length(e0) > 1L){
+      if(is.null(names(e0))) stop(
+        "'e0' is a vector with sample-specific data ",
+        "but names are missing"
+      )
+      if(!all(nmes.samples %in% names(e0))) stop(
+        "'e0' lacks data for some samples"
+      )
+    }
+
+    if(NROW(ratio_lc_lt_bound) > 1L){
+      if(is.null(rownames(ratio_lc_lt_bound))) stop(
+        "'ratio_lc_lt_bound' is a matrix with sample-specific data ",
+        "but rownames are missing"
+      )
+      if(!all(nmes.samples %in% rownames(ratio_lc_lt_bound))) stop(
+        "'ratio_lc_lt_bound' lacks data for some samples"
+      )
+    }
+
+  }
+
+  ## augment list of dataframes with param, fit_param, lower_param,
+  ## upper_param, e0 and ratio_lc_lt_bound components
 
   input.data <- lapply(
     1:length(input.data),
     function(i){
 
-      prm <- NULL
+      param.ii <- NULL
       if(!is.null(param)){
-        prm <- unname(param[min(i, NROW(param)), ])
-        names(prm) <- colnames(param)
+        if(NROW(param) > 1L){
+          ii <- match(nmes.samples[i], rownames(param))
+        } else {
+          ii <- 1L
+        }
+        param.ii <- unname(param[ii, ])
+        names(param.ii) <- colnames(param)
       }
-      fprm <- NULL
-      if(!is.null(fit_param)){
-        fprm <- unname(fit_param[min(i, NROW(fit_param)), ])
-        names(fprm) <- colnames(fit_param)
+
+      if(NROW(fit_param) > 1L){
+        ii <- match(nmes.samples[i], rownames(fit_param))
+      } else {
+        ii <- 1L
       }
-      lwr <- NULL
+      fit_param.ii <- unname(fit_param[ii, ])
+      names(fit_param.ii) <- colnames(fit_param)
+
+      lower_param.ii <- NULL
       if(!is.null(lower_param)){
-        lwr <- unname(lower_param[min(i, NROW(lower_param)), ])
-        names(lwr) <- colnames(lower_param)
+        if(NROW(lower_param) > 1L){
+          ii <- match(nmes.samples[i], rownames(lower_param))
+        } else {
+          ii <- 1L
+        }
+        lower_param.ii <- unname(lower_param[ii, ])
+        names(lower_param.ii) <- colnames(lower_param)
       }
-      upr <- NULL
+
+      upper_param.ii <- NULL
       if(!is.null(upper_param)){
-        upr <- unname(upper_param[min(i, NROW(upper_param)), ])
-        names(upr) <- colnames(upper_param)
+        if(NROW(upper_param) > 1L){
+          ii <- match(nmes.samples[i], rownames(upper_param))
+        } else {
+          ii <- 1L
+        }
+        upper_param.ii <- unname(upper_param[ii, ])
+        names(upper_param.ii) <- colnames(upper_param)
       }
+
+      if(length(e0) > 1L){
+        ii <- match(nmes.samples[i], names(e0))
+      } else {
+        ii <- 1L
+      }
+      e0.ii <- unname(e0[ii])
+
+      if(NROW(ratio_lc_lt_bound) > 1L){
+        ii <- match(nmes.samples[i], rownames(ratio_lc_lt_bound))
+      } else {
+        ii <- 1L
+      }
+      ratio_lc_lt_bound.ii <- unname(ratio_lc_lt_bound[ii, ])
+      names(ratio_lc_lt_bound.ii) <- colnames(ratio_lc_lt_bound)
 
       list(
         data = input.data[[i]],
-        param = prm,
-        fit_param = fprm,
-        lower_param = lwr,
-        upper_param = upr,
-        e0 = e0[min(i, length(e0))],
-        ratio_lc_lt_bound = ratio_lc_lt_bound[min(i, NROW(ratio_lc_lt_bound)), ]
+        param = param.ii,
+        fit_param = fit_param.ii,
+        lower_param = lower_param.ii,
+        upper_param = upper_param.ii,
+        e0 = e0.ii,
+        ratio_lc_lt_bound = ratio_lc_lt_bound.ii
       )
     }
   )
@@ -1532,7 +1665,7 @@ fit_wrc_hcc <- function(
 
   f.aux <- function(i){
 
-    ## note that input.data, wrc, wrc_formula, wrc.mf, hcc, hcc_formula, hcc.mf,
+    ## note that input.data, wrc, wrc_formula, wrc_mf, hcc, hcc_formula, hcc_mf,
     ## all.param.name, control, verbose, split.variables
     ## are taken from parent environment
 
@@ -1658,8 +1791,8 @@ fit_wrc_hcc <- function(
         i,
         input.data.i, param.i, fit_param.i,
         e0.i, ratio_lc_lt_bound.i,
-        wrc, wrc_formula, wrc.mf,
-        hcc, hcc_formula, hcc.mf,
+        wrc, wrc_formula, wrc_mf,
+        hcc, hcc_formula, hcc_mf,
         all.param.name,
         control,
         common.env,
@@ -1699,7 +1832,7 @@ fit_wrc_hcc <- function(
 
   }
 
-#### --  loop over all samples
+#### -- loop over all samples
 
   if(
     control[["pcmp"]][["ncores"]] > 1L &&
@@ -1727,15 +1860,13 @@ fit_wrc_hcc <- function(
 
     export.items <- c(
       "input.data", "split.variables",
-      "wrc",
-      "hcc",
+      "wrc", "wrc_formula", "wrc_mf",
+      "hcc", "hcc_formula", "hcc_mf",
       "all.param.name",
       "control",
       "common.env",
       "verbose"
     )
-    if(wrc) export.items <- c(export.items, "wrc_formula", "wrc.mf")
-    if(hcc) export.items <- c(export.items, "hcc_formula", "hcc.mf")
 
     junk <- sfExport(list = export.items)
 
@@ -1809,8 +1940,19 @@ fit_wrc_hcc <- function(
 
   ## create list and set class attribute
 
+  if(identical(length(split.variables), 3L)){
+    tmp <- split.variables[3]
+
+  } else {
+    tmp <- NULL
+  }
+
   result <- list(
-    fit = result, control = control, call = cl, na.action = na.action
+    fit = result,
+    sample_id_variable = tmp,
+    wrc = wrc, wrc_formula = wrc_formula, wrc_mf = wrc_mf,
+    hcc = hcc, hcc_formula = hcc_formula, hcc_mf = hcc_mf,
+    control = control, call = cl, na.action = na.action
   )
 
   class(result) <- "fit_wrc_hcc"
@@ -1902,5 +2044,597 @@ extract_error_messages <- function(object, start = 1, stop = 80, prt = TRUE){
   if(prt) cat(substr(msg, start, stop))
 
   invisible(msg)
+
+}
+
+
+## ======================================================================
+### prfloglik_sample
+
+prfloglik_sample <- function(
+  object, values, soil_sample,
+  ncores = min(detectCores() - 1L, NROW(values)),
+  verbose = 0
+){
+
+  ## function to compute loglikelihood profile for a single sample of a
+  ## fit_wrc_hcc object function is based on profilelogLik{georob}
+
+  ## 2021-12-20 Andreas Papritz
+  ## 2021-12-22 AP correction of errors for parallel computations on windows
+  ## 2021-12-28 AP small changes
+  ## 2021-12-31 AP new version calling directly fit_wrc_hcc_fit
+  ## 2022-01-06 AP adjust values of thetar and thetas if outside 
+  ##               of allowed bounds
+
+  if(!is.finite(verbose)) browser()
+
+#### -- auxiliary function
+
+  ## auxiliary function to fit model and return maximized log-likelihood
+  ## and conditionally estimated parameters
+
+  f.aux <- function(i){
+
+    ## values, soil_sample, input.data, param, fit_param, e0, ratio_lc_lt_bound,
+    ## object, common.env, verbose are taken from parent environment
+
+    ## set fixed initial values
+
+    param[colnames(values)] <- unname(values[i, ])
+
+    ## estimate parameters
+
+    fit <- try(
+      fit_wrc_hcc_fit(
+        i = soil_sample,
+        input.data = input.data,
+        param = param, fit_param = fit_param,
+        e0 = e0, ratio_lc_lt_bound = ratio_lc_lt_bound,
+        wrc = object[["wrc"]], wrc_formula = object[["wrc_formula"]],
+        wrc_mf = object[["wrc_mf"]],
+        hcc = object[["hcc"]], hcc_formula = object[["hcc_formula"]],
+        hcc_mf = object[["hcc_mf"]],
+        all.param.name = names(default_fit_param()),
+        control = object[["control"]],
+        common.env = common.env,
+        verbose = verbose
+      )
+      , silent = TRUE
+    )
+
+    ## result
+
+    if(identical(class(fit), "try-error")){
+
+      param[names(fit_param)[fit_param]] <- NA_real_
+      gradient <- rep(NA_real_, length(object[["fit"]][[1]][["nlp"]]))
+      names(gradient) <- names(object[["fit"]][[1]][["nlp"]])
+      gradient <- gradient[names(gradient) %in% names(param)[is.na(param)]]
+      names(gradient) <- paste0("gradient.", names(gradient))
+
+      result <- c(
+        loglik = NA_real_,
+        param,
+        gradient,
+        converged = NA_real_
+      )
+
+    } else {
+
+      result <- c(
+        loglik = - fit[["objective"]],
+        c(fit[["nlp"]], fit[["lp"]]),
+        gradient = fit[["gradient"]],
+        converged = fit[["converged"]]
+      )
+
+    }
+
+    result
+
+  }
+
+
+#### -- check arguments and contents of object and values
+
+  if(missing(object) || missing(values)) stop(
+    "some mandatory arguments are missing"
+  )
+
+  stopifnot(identical(class(object)[1], "fit_wrc_hcc"))
+  stopifnot(identical(length(verbose), 1L) && is.numeric(verbose) && verbose >= 0)
+  stopifnot(identical(length(ncores), 1L) && is.numeric(ncores) && ncores >= 1)
+
+  if(!(is.matrix(values) || is.data.frame(values))) stop(
+    "'values' must be a dataframe or a matrix"
+  )
+
+  if(length(object[["fit"]]) > 1L){
+    if(missing(soil_sample)) stop(
+      "argument 'soil_sample' must be a character scalar because 'object' contains ",
+      " parameter estimates for several samples"
+    )
+    if(length(soil_sample) > 1L || !is.character(soil_sample)) stop(
+      "'soil_sample' must be a character scalar"
+    )
+  } else {
+    if(!missing(soil_sample)){
+      warning(
+        "argument 'soil_sample' will be ignored because 'object' contains ",
+        "parameter estimates for just one sample"
+      )
+    }
+    soil_sample <- ""
+  }
+
+  if(!identical(object[["control"]][["method"]], "ml")) stop(
+    "to compute profile loglikelihood, parameters must be estimated by ",
+    "maximum likelihood method using control argument 'method = ml'"
+  )
+
+  if(object[["control"]][["settings"]] %in% c("uglobal", "cglobal", "sce")) warning(
+    "parameters have been estimated by global algorithm"
+  )
+
+#### -- prepare objects required for call of fit_wrc_hcc_fit
+
+  ## select component of object$fit for sample chosen by soil_sample
+
+  if(length(object[["fit"]]) > 1L){
+    if(soil_sample %in% names(object[["fit"]])){
+      object[["fit"]] <- object[["fit"]][soil_sample]
+    } else stop(
+      "parameter estimates missing in 'object' missing for sample ",
+      soil_sample
+    )
+  }
+
+  ## check whether selected component of object$fit is valid
+
+  if(is.null(object[["fit"]][[1]])) stop(
+    "parameter estimation failed for sample ", soil_sample
+  )
+
+  ## update components wrc and hcc in object$fit[[1]] in dependence of
+  ## available data
+
+  ## no wrc data for selected sample
+
+  if(object[["wrc"]] && is.null(object[["fit"]][[1]][["model"]][["wrc"]])){
+    object[["wrc"]] <- FALSE
+  }
+
+  ## no hcc data for selected sample
+
+  if(object[["hcc"]] && is.null(object[["fit"]][[1]][["model"]][["hcc"]])){
+    object[["hcc"]] <- FALSE
+  }
+
+  ## get input.data, param, fit_param, e0, ratio_lc_bound for selected
+  ## sample
+
+  input.data <- NULL
+  if(object[["wrc"]]){
+    input.data <- object[["fit"]][[1]][["model"]][["wrc"]]
+  }
+  if(object[["hcc"]]){
+    if(is.null(input.data)){
+      input.data <- object[["fit"]][[1]][["model"]][["hcc"]]
+    } else {
+      input.data <- merge(
+        input.data, object[["fit"]][[1]][["model"]][["hcc"]],
+        all = TRUE
+      )
+    }
+  }
+
+  param <- c(
+    object[["fit"]][[1]][["nlp"]], object[["fit"]][[1]][["lp"]]
+  )
+
+  fit_param <- object[["fit"]][[1]][["initial_objects"]][["fit_param"]]
+
+  param_bound <- object[["fit"]][[1]][["initial_objects"]][["param_bound"]]
+
+  e0 <- object[["fit"]][[1]][["initial_objects"]][["e0"]]
+
+  ratio_lc_lt_bound <- object[["fit"]][[1]][["initial_objects"]][["ratio_lc_lt_bound"]]
+
+  ## adjust values for thetar and thetas if estimates are outside of
+  ## allowed bounds
+  
+  if("thetar" %in% names(param)){
+    param["thetar"] <- min(
+      max(param["thetar"], param_bound[["thetar"]][1]), 
+      param["thetas"]
+    )
+  }
+  
+  if("thetas" %in% names(param)){
+    param["thetas"] <- max(
+      min(param["thetas"], param_bound[["thetas"]][2]), 
+      param["thetar"]
+    )
+  }
+  
+
+  ## omit subset argument from modelframes
+
+  if(!is.null(object[["wrc_mf"]])){
+    x <- as.list(object[["wrc_mf"]])
+    x <- x[!names(x) %in% "subset"]
+    object[["wrc_mf"]] <- as.call(x)
+  }
+
+  if(!is.null(object[["hcc_mf"]])){
+    x <- as.list(object[["hcc_mf"]])
+    x <- x[!names(x) %in% "subset"]
+    object[["hcc_mf"]] <- as.call(x)
+  }
+
+  ## check names of fixed parameters in values
+
+  fixed.param <- colnames(values)
+  fixed.param <- unname(sapply(
+    fixed.param, match.arg,
+    choices = c(names(default_fit_param()))
+  ))
+  if(any(!fixed.param %in% names(param))) stop(
+    "column names of 'values' do not match names of parameters in 'object'"
+  )
+  colnames(values) <- fixed.param
+
+  ## check whether values of fixed parameters are within allowed ranges
+
+  minmax.values <- lapply(values, range)
+
+  check_param_boundf(minmax.values, compare_thetar_thetas = FALSE)
+
+  bla <- lapply(
+    names(minmax.values),
+    function(i){
+      if(
+        minmax.values[[i]][1] < param_bound[[i]][1] ||
+        minmax.values[[i]][2] > param_bound[[i]][2]
+      ) warning(
+        "extrema of parameter '", i, "' in 'values' outside of allowed range"
+      )
+    }
+  )
+
+  ## change fit_param to FALSE for variables present in values
+
+  fit_param[fixed.param] <- FALSE
+
+  ## set ncores = 1L in object$control$pcmp
+
+  object[["control"]][["pcmp"]][["ncores"]] <- 1L
+
+  ## set hessian = FALSE in object$control
+
+  object[["control"]][["hessian"]] <- FALSE
+
+  ## create environment for storing index of iteration, linear parameter
+  ## and value of objective function
+
+  common.env <- new.env()
+
+
+#### -- fit model for sets of parameter values
+
+  ## loop over all elements of values
+
+  values <- as.matrix(values)
+
+  ## set default value for control of forking if missing (required for
+  ## backward compatibility)
+
+  if(
+    ncores > 1L &&
+    !object[["control"]][["pcmp"]][["fork"]]
+  ){
+
+    ## create a SNOW cluster on windows OS
+
+    options(error = stop_cluster)
+    junk <- sfInit( parallel = TRUE, cpus = ncores )
+
+    ## export required items to workers
+
+    junk <- sfLibrary("soilhypfit", verbose = FALSE, character.only = TRUE)
+
+    ## export required items to workers (if package is installed)
+
+    #     junk <- sfExportAll()
+    #     export.items <- c("values", "object", "data", "change_function_call_set_onexxx_to_value")
+
+    export.items <- c(
+      "values",
+      "soil_sample",
+      "input.data", "param", "fit_param", "e0", "ratio_lc_lt_bound",
+      "object", "common.env", "verbose"
+    )
+
+    junk <- sfExport(list = export.items)
+
+    result <- sfLapply(1L:NROW(values), f.aux)
+
+    junk <- stop_cluster()
+
+  } else {
+
+    ## fork child processes on non-windows OS
+
+    result <- mclapply(
+      1L:NROW(values),
+      f.aux,
+      mc.cores = ncores,
+      mc.allow.recursive = FALSE
+    )
+
+  }
+
+
+#### -- prepare output
+
+  ## collect results
+
+  result <- t(simplify2array(result))
+  result <- result[, !colnames(result) %in% colnames(values), drop = FALSE]
+
+  as.data.frame(cbind(values, result))
+
+}
+
+
+## ======================================================================
+### confint_prfloglik_sample
+
+confint_prfloglik_sample <- function(
+  object, parm = names(default_fit_param()), soil_sample,
+  level = 0.95, test = c("F", "Chisq"),
+  denominator_df = c("nonlinear", "all"),
+  param_bound = NULL,
+  root_tol = .Machine$double.eps^0.25,
+  froot_tol = sqrt(root_tol),
+  verbose = 0
+){
+
+  ## function to compute lconfidence interval of a parameter for a single
+  ## fit_wrc_hcc fit based on likelihood ratio test
+
+  ## 2021-12-29 Andreas Papritz
+  ## 2022-01-02 AP new version based on new prfloglik_sample calling
+  ##               directly fit_wrc_hcc_fit
+  ## 2022-01-03 AP new criterion to decide whether root has been found
+
+  if(!is.finite(verbose)) browser()
+
+#### -- auxiliary function with zero roots for confidence limits
+  f.aux <- function(
+    x, parm, object, qtest, maximized_loglik
+  ){
+
+    ## compute profile loglikelihood for parm = x
+
+    values <- data.frame(x = x)
+    colnames(values) <- parm
+
+    tmp <- prfloglik_sample(
+      object, values = values, ncores = 1L, verbose = verbose
+    )
+
+    ## compute and function value
+
+    qtest - (maximized_loglik - tmp[1, "loglik"])
+
+  }
+
+#### -- check arguments and contents of object
+
+  parm <- match.arg(parm)
+  test  <- match.arg(test)
+  denominator_df <- match.arg(denominator_df)
+
+  if(missing(object)) stop(
+    "some mandatory arguments are missing"
+  )
+
+  stopifnot(identical(class(object)[1], "fit_wrc_hcc"))
+  stopifnot(identical(length(verbose), 1L) && is.numeric(verbose) && verbose >= 0)
+  stopifnot(identical(length(level), 1L) && is.numeric(level) && level >= 0 & level <= 1)
+
+  if(length(object[["fit"]]) > 1L){
+    if(missing(soil_sample)) stop(
+      "argument 'soil_sample' must be a character scalar because 'object' contains ",
+      " parameter estimates for several samples"
+    )
+    if(length(soil_sample) > 1L || !is.character(soil_sample)) stop(
+      "'soil_sample' must be a character scalar"
+    )
+  } else {
+    if(!missing(soil_sample)){
+      warning(
+        "argument 'soil_sample' will be ignored because 'object' contains ",
+        "parameter estimates for just one sample"
+      )
+    }
+    soil_sample <- ""
+  }
+
+  if(!identical(object[["control"]][["method"]], "ml")) stop(
+    "to compute profile loglikelihood, parameters must be estimated by ",
+    "maximum likelihood method using control argument 'method = ml'"
+  )
+
+  if(object[["control"]][["settings"]] %in% c("uglobal", "cglobal", "sce")) warning(
+    "parameters have been estimated by global algorithm"
+  )
+
+  if(!is.null(param_bound)){
+    stopifnot(is.numeric(param_bound) && identical(length(param_bound), 2L))
+    tmp <- list(param_bound)
+    names(tmp) <- parm
+    check_param_boundf(tmp)
+  }
+
+
+#### -- prepare objects for computing confidence interval
+
+  ## select component of object$fit for sample chosen by soil_sample
+
+  if(length(object[["fit"]]) > 1L){
+    if(soil_sample %in% names(object[["fit"]])){
+      object[["fit"]] <- object[["fit"]][soil_sample]
+    } else stop(
+      "parameter estimates missing in 'object' missing for sample ",
+      soil_sample
+    )
+  }
+
+  ## check whether selected component of object$fit is valid
+
+  if(is.null(object[["fit"]][[1]])) stop(
+    "parameter estimation failed for sample ", soil_sample
+  )
+
+  ## extract maximized loglik, parameter estimate and boundaries of parm
+
+  tmp <- coef(object, gof = TRUE)
+  param_estimate <- unname(tmp[, parm])
+  maximized_loglik <- -unname(tmp[, "obj"])
+
+  if(is.null(param_bound)){
+    param_bound <- unname(
+      object[["fit"]][[1]][["initial_objects"]][["param_bound"]][[parm]]
+    )
+  }
+
+  ## determine number of measurements of wrc and/or hcc
+
+  if(!is.null(object[["fit"]][[1]][["model"]][["wrc"]])){
+    nobs_wrc <- NROW(object[["fit"]][[1]][["model"]][["wrc"]])
+  } else {
+    nobs_wrc <- 0L
+  }
+
+  if(!is.null(object[["fit"]][[1]][["model"]][["hcc"]])){
+    nobs_hcc <- NROW(object[["fit"]][[1]][["model"]][["hcc"]])
+  } else {
+    nobs_hcc <- 0L
+  }
+  nobs <- nobs_wrc + nobs_hcc
+
+  ## check type of test given type of data
+
+  if(identical(test, "F") && nobs_wrc * nobs_hcc > 0){
+    test <- "Chisq"
+    warning(
+      "Chisq-Test will be used because both water retention and", "
+      hydraulic conductivity data were used to estimate the parameters"
+    )
+  }
+
+  ## determine how many (nonlinear) parameters were fitted
+
+  nme_param <- switch(
+    denominator_df,
+    nonlinear = names(object[["fit"]][[1]][["nlp"]]),
+    all = c(
+      names(object[["fit"]][[1]][["nlp"]]),
+      names(object[["fit"]][[1]][["lp"]])
+    ),
+    stop("unknown value for 'denominator_df'")
+  )
+  n_nlp <- sum(object[["fit"]][[1]][["initial_objects"]][["fit_param"]][nme_param])
+
+  ## compute (transformed) quantile of chi2- or f-distribution
+
+  qtest <- switch(
+    test,
+    "Chisq" = 0.5 * qchisq(level, 1),
+    "F" = 0.5 * nobs * log(1 + 1/(nobs - n_nlp) * qf(level, 1, nobs - n_nlp)),
+    stop("unknown test")
+  )
+
+
+### -- compute limits of confidence interval
+
+  ## lower limit
+
+  flower <- f.aux(
+    param_bound[1], parm, object, qtest, maximized_loglik
+  )
+  fupper <- f.aux(
+    param_estimate, parm, object, qtest, maximized_loglik
+  )
+
+  if(identical(sign(flower * fupper), -1.)){
+
+    t.lower <- uniroot(
+      f.aux,
+      lower = param_bound[1], upper = param_estimate,
+      f.lower = flower, f.upper = fupper, tol = root_tol,
+      parm = parm, object = object, qtest = qtest,
+      maximized_loglik = maximized_loglik
+    )
+
+    if(abs(t.lower[["f.root"]]) < froot_tol ){
+      lower_limit <- t.lower[["root"]]
+    } else {
+      warning("failure to compute lower confidence limit")
+      lower_limit <- NA_real_
+    }
+    lower_froot <- t.lower[["f.root"]]
+
+  } else {
+    lower_limit <- lower_froot <- NA_real_
+  }
+
+  ## upper limit
+
+  flower<- f.aux(
+    param_estimate, parm, object, qtest, maximized_loglik
+  )
+  fupper <- f.aux(
+    param_bound[2], parm, object, qtest, maximized_loglik
+  )
+
+  if(identical(sign(flower * fupper), -1.)){
+
+    t.upper <- uniroot(
+      f.aux,
+      upper = param_bound[2], lower = param_estimate,
+      f.lower = flower, f.upper = fupper, tol = root_tol,
+      parm = parm, object = object, qtest = qtest,
+      maximized_loglik = maximized_loglik
+    )
+
+    if(abs(t.upper[["f.root"]]) < froot_tol ){
+      upper_limit <- t.upper[["root"]]
+    } else {
+      warning("failure to compute upper confidence limit")
+      upper_limit <- NA_real_
+    }
+    upper_froot <- t.upper[["f.root"]]
+
+  } else {
+    upper_limit <- upper_froot <- NA_real_
+  }
+
+### -- prepare and return output
+
+  result <- c(lower_limit, upper_limit)
+  names(result) <- paste(parm, c("lower", "upper"), sep = ".")
+  attr(result, "prfloglik") <- list(
+    estimate = param_estimate,
+    loglik = maximized_loglik,
+    qtest = qtest,
+    test = test, level = level, nobs_wrc = nobs_wrc, nobs_hcc = nobs_hcc,
+    lower_froot = lower_froot, upper_froot = upper_froot
+  )
+
+  result
 
 }

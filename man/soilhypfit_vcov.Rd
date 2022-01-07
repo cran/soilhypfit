@@ -1,5 +1,5 @@
-% 2021-10-13 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-1/pkg/man
+% 2021-12-20 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_vcov.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_vcov.Rd;
 % hunspell -d en_GB-ise soilhypfitS3methods.Rd
 
@@ -155,6 +155,9 @@ maximum likelihood or maximum posterior density.
 
 %   \code{\link{vcov}} for computing (co-)variances of the estimated
 %   nonlinear parameters;
+
+  \code{\link{prfloglik_sample}} for profile loglikelihood
+  computations;
 
   \code{\link{wc_model}} and \code{\link{hc_model}} for currently
   implemented models for soil water retention curves and hydraulic

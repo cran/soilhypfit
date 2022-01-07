@@ -2,3 +2,4 @@
 2020-08-11  soilhypfit Version 0.1-2 released
 2021-10-27  soilhypfit Version 0.1-3 released to CRAN
 2021-12-07  soilhypfit Version 0.1-4 released to CRAN, new default local constrained and unconstrained algorithms
+2022-01-07  soilhypfit Version 0.1-5 released to CRAN, new functions for profile loglikelihood computations

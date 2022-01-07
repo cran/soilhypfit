@@ -1,5 +1,5 @@
-% 2020-06-10 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-1/pkg/man
+% 2021-12-20 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_utility_functions.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_utility_functions.Rd;
 % hunspell -d en_GB-ise utility_functions.Rd
 
@@ -36,7 +36,7 @@ extract_error_messages(object, start = 1, stop = 80, prt = TRUE)
 
 select_failed_fits(object)
 
-check_param_boundf(y)
+check_param_boundf(y, compare_thetar_thetas = TRUE)
 }
 
 % arguments
@@ -62,7 +62,12 @@ check_param_boundf(y)
   \item{y}{a named list of numeric vectors of length 2 that define the
   allowed lower and upper bounds (box constraints) for the parameters of
   the models, see argument \code{param_bound} of
-  \code{\link{control_fit_wrc_hcc}}.} }
+  \code{\link{control_fit_wrc_hcc}}.}
+
+  \item{compare_thetar_thetas}{logical scalar to control cross-comparison
+  of valid ranges of parameters \code{thetar} and \code{thetas}.}
+
+}
 
 % details
 
@@ -120,6 +125,9 @@ return invisibly the convergence code or the error messages.
 
   \code{\link{vcov}} for computing (co-)variances of the estimated
   nonlinear parameters;
+
+  \code{\link{prfloglik_sample}} for profile loglikelihood
+  computations;
 
   \code{\link{wc_model}} and \code{\link{hc_model}} for currently
   implemented models for soil water retention curves and hydraulic

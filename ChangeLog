@@ -87,3 +87,61 @@ initial values for the nonlinear parameters alpha and n
 2021-12-07  Andreas Papritz  <papritz@env.ethz.ch>
 
 * soilhypfit_exported_functions.R (control_fit_wrc_hcc): new defaults for local unconstrained and constrained algorithms
+
+
+2021-12-15  Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_S3methods.R (vcov.fit_wrc_hcc): nwarning if standard errors of nonlinear parameters are computed for a fit with global algorithm
+
+
+2021-12-20 Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (prfloglik_sample): new function for profile loglikelihood computations
+* soilhypfit_private_functions.R (change_function_call_set_onexxx_to_value, change_function_call_set_onefitxxx_to_value, change_function_call_set_x_to_value, change_function_call_set_x_to_value_in_fun): new functions required for profile loglikelihood computations
+
+
+2021-12-20 Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (control_fit_wrc_hcc): new default value "ml" for methods argument
+* soilhypfit_exported_functions.R (fit_wrc_hcc): warning if lower_param or upper_param are vectors
+* soilhypfit_exported_functions.R (prfloglik_sample): correction of errors for parallel computations on windows
+* soilhypfit_S3methods.R (print.summary_fit_wrc_hcc): print parameter space only if lower_param and upper_param were missing in call of fit_wrc_hcc
+* soilhypfit_S3methods.R (vcov.fit_wrc_hcc): use of sample-specific param_bound
+
+
+2021-12-26 Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (check_param_boundf): possibility to check incomplete parameter boundaries
+
+
+2021-12-29 Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (fit_wrc_hcc): sample_id_variable stored as additional component in output new method to match input.data and sample-specific data for param, fit_param, lower_param, upper_param, e0 ratio_lc_lt_bound
+* soilhypfit_exported_functions.R (prfloglik_sample): small changes
+* soilhypfit_exported_functions.R (confint_prfloglik_sample): new function
+* soilhypfit_private_functions.R (change_function_call_set_onexxx_to_value): correction of error when param missing in call
+
+
+2022-01-02 Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (fit_wrc_hcc): wrc, wrc_formula, wrc_mf, hcc, hcc_formula, hcc_mf stored as additional components in output 
+* soilhypfit_exported_functions.R (prfloglik_sample): new version calling directly fit_wrc_hcc_fit
+* soilhypfit_exported_functions.R (confint_prfloglik_sample): changes for using new version of prfloglik_sample
+* soilhypfit_private_functions.R (change_function_call_set_onexxx_to_value, change_function_call_set_onefitxxx_to_value, change_function_call_set_x_to_value, change_function_call_set_x_to_value_in_fun): omission of these functions because new version of prfloglik_sample requires them
+
+
+2022-01-02 Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (confint_prfloglik_sample): new criterion to decide whether root has been found
+* soilhypfit_exported_functions.R (check_param_boundf): optional cross-comparison of boundaries of thetar and thetas
+
+
+2022-01-05 Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_S3methods.R (confint.fit_wrc_hcc): new confint method for computing confidence intervals based on likelihood ratio test or the asymptotic normal distribution of ML estimates
+
+
+2022-01-06 Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_private_functions.R (estimate_lp): adjust values of thetar and thetas if outside of allowed bounds
+* soilhypfit_exported_functions.R (prfloglik_sample): adjust values of thetar and thetas if outside of allowed bounds

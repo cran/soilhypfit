@@ -1,5 +1,5 @@
-% 2020-06-10 A. Papritz
-% cd R.user.home/soilhypfit/soilhypfit_01-1/pkg/man
+% 2021-12-20 A. Papritz
+% cd R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_hcc_model.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_hcc_model.Rd;
 % hunspell -d en_GB-ise hcc_model.Rd
 

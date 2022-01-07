@@ -116,6 +116,8 @@ print.summary_fit_wrc_hcc <- function(
   ## 2019-12-20 A. Papritz  print only a summary of result
   ## 2020-06-15 A. Papritz  output parameter space also for local
   ##                        algorithm and untransformed parameters
+  ## 2021-12-22 A. Papritz  print parameter space only if lower_param
+  ##                        and upper_param were missing in call of fit_wrc_hcc
 
   ## call
 
@@ -210,16 +212,28 @@ print.summary_fit_wrc_hcc <- function(
       )
     )
   ){
-    cat("\n  parameter space")
-    sel <- names(x[["control"]][["param_bound"]]) %in% colnames(x[["result"]])
-    bla <- lapply(
-      names(x[["control"]][["param_bound"]][sel]),
-      function(y) cat(
-        "\n    ",
-        format(y, width = 8L, justify = "right"),
-        format(signif(x[["control"]][["param_bound"]][[y]], digits = 3L), width = 10L)
+
+    ## print parameter space when lower_param and upper param
+    ## arguments were missing in call of fit_wrc_hcc
+
+    cl <- as.list(x[["call"]])
+
+    if(is.null(cl[["lower_param"]]) && is.null(cl[["upper_param"]])){
+
+      cat("\n  parameter space")
+      sel <- names(x[["control"]][["param_bound"]]) %in% colnames(x[["result"]])
+      bla <- lapply(
+        names(x[["control"]][["param_bound"]][sel]),
+        function(y) cat(
+          "\n    ",
+          format(y, width = 8L, justify = "right"),
+          format(signif(x[["control"]][["param_bound"]][[y]], digits = 3L), width = 10L)
+        )
       )
-    )
+
+    }
+
+
   }
 
   ## details on data
@@ -256,6 +270,9 @@ vcov.fit_wrc_hcc <- function(
   ## 2021-10-13 A. Papritz correction of error in checking whether estimates
   ##                       are on boundary of parameter space or whether the
   ##                       gradient is not approximately equal to zero
+  ## 2021-12-15 A. Papritz warning if standard errors of nonlinear parameters
+  ##                       are computed for a fit with global algorithm
+  ## 2021-12-22 A. Papritz use of sample-specific param_bound
 
   #   ## check consistency of object
   #
@@ -282,6 +299,10 @@ vcov.fit_wrc_hcc <- function(
     "computing covariance matrix of nonlinear parameters for constrained estimates"
   )
 
+  if(object[["control"]][["settings"]] %in% c("uglobal", "cglobal", "sce")) warning(
+    "computing covariance matrix of nonlinear parameters for global algorithm"
+  )
+
   if(!object[["control"]][["method"]] %in% c("ml", "mpd")) stop(
     "covariance matrix of nonlinear parameters only available for 'mpd' or 'ml' estimation"
   )
@@ -295,15 +316,15 @@ vcov.fit_wrc_hcc <- function(
   if(missing(grad_eps)) grad_eps <-
     object[["control"]][["grad_eps"]]
 
-  ## extract boundaries of parameter space
-
-  param_bound <- object[["control"]][["param_bound"]]
-
   ## compute covariance matrices, cf Stewart et al., 1981, section 3.4
 
   result <- lapply(
     1:length(object[["fit"]]),
     function(i){
+
+      ## extract boundaries of parameter space
+
+      param_bound <- object[["fit"]][[i]][["initial_objects"]][["param_bound"]]
 
       ## select current sample
 
@@ -599,6 +620,7 @@ coef.fit_wrc_hcc <- function(
   ##                       for nonlinear parameters when some parameters
   ##                       are fixed
   ## 2021-10-13 AP correction of degrees of freedom for ml and mpd method
+  ## 2021-12-15 AP correction of checking consistency of argument residual_se
 
 
   #   ## check consistency of object
@@ -617,10 +639,10 @@ coef.fit_wrc_hcc <- function(
   what <- match.arg(what)
 
   if(residual_se && identical(object[["control"]][["method"]], "wls")){
-    stop(
+    warning(
       "computing residual standard is only meaningful for 'mpd' or 'ml' estimates"
     )
-    residual_se = FALSE
+    residual_se <- FALSE
   }
 
   if(se && is.null(object[["fit"]][[1]][["hessian"]])){
@@ -771,7 +793,7 @@ coef.fit_wrc_hcc <- function(
 
 # ## ======================================================================
 plot.fit_wrc_hcc <- function(
-  x, what = c("wrc", "hcc"), y = NULL, 
+  x, what = c("wrc", "hcc"), y = NULL,
   subset = NULL, ylim_wc = NULL, ylim_hc = NULL,
   head_saturation = 0.01,
   beside = identical(sum(par("mfrow")), 2L),
@@ -824,8 +846,12 @@ plot.fit_wrc_hcc <- function(
   if(!is.null(subset)){
     stopifnot(is.character(subset) || is.numeric(subset) || is.logical(subset))
     stopifnot(length(subset) <= length(x[["fit"]]))
+    stopifnot(all(subset %in% names(x[["fit"]])))
     x[["fit"]] <- x[["fit"]][subset]
-    if(!is.null(y)) y[["fit"]] <- y[["fit"]][subset]
+    if(!is.null(y)){
+      stopifnot(all(subset %in% names(y[["fit"]])))
+      y[["fit"]] <- y[["fit"]][subset]
+    }
   }
 
   ## check consistency of x and y
@@ -1407,5 +1433,243 @@ lines.fit_wrc_hcc <- function(
   }
 
   invisible()
+
+}
+
+
+# ## ======================================================================
+### confint.fit_wrc_hcc
+
+confint.fit_wrc_hcc <- function(
+  object, parm = names(object[["control"]][["initial_param"]]),
+  level = 0.95,
+  subset = NULL,
+  type = c("loglik", "normal"),
+  test = c("F", "Chisq"),
+  denominator_df = c("nonlinear", "all"),
+  root_tol = .Machine$double.eps^0.25,
+  froot_tol = sqrt(root_tol),
+  ncores = detectCores() - 1L,
+  verbose = 0, ...
+){
+
+  ## S3 method to compute confidence intervals for parameters estimated by
+  ## fit_wrc_hcc based on the likelihood ratio test or the asymptotic
+  ## normal distribution of the estimates
+
+  ## 2022-01-05 A. Papritz
+
+  if(!is.finite(verbose)) browser()
+
+#### -- auxiliary function
+
+  f.aux <- function(soil_sample, ncores){
+
+    ## computes confidence interval for single sample based on likelihood
+    ## ratio test
+
+    ## object, parm, level, level, test, denominator_df, root_tol,
+    ## froot_tol, verbose, ll.label, ul.label are taken from parent
+    ## environment
+
+    ## loop over all elements of parm that are present and was fitted
+
+    fit_param <- object[["fit"]][[soil_sample]][["initial_objects"]][["fit_param"]]
+    sel.parm <- names(fit_param)[fit_param]
+    sel.parm <- sel.parm[sel.parm %in% parm]
+
+    result <- simplify2array(mclapply(
+        sel.parm,
+        function(i){
+          res <- confint_prfloglik_sample(
+            object = object, parm = i, soil_sample = soil_sample,
+            level = level, test = test, denominator_df = denominator_df,
+            root_tol = root_tol, froot_tol = froot_tol,
+            verbose = verbose
+          )
+          res
+        },
+        mc.cores = min(ncores, length(sel.parm)),
+        mc.allow.recursive = FALSE
+
+      ))
+
+    colnames(result) <- sel.parm
+    rownames(result) <- c(ll.label, ul.label)
+
+  result
+
+  }
+
+#### -- check arguments and contents of object
+
+  parm <- match.arg(parm, several.ok = TRUE)
+  test <- match.arg(test)
+  type <- match.arg(type)
+  denominator_df <- match.arg(denominator_df)
+
+  if(missing(object)) stop(
+    "some mandatory arguments are missing"
+  )
+
+  stopifnot(identical(class(object)[1], "fit_wrc_hcc"))
+  stopifnot(identical(length(verbose), 1L) && is.numeric(verbose) && verbose >= 0)
+  stopifnot(identical(length(level), 1L) && is.numeric(level) && level >= 0 & level <= 1)
+
+  if(!identical(object[["control"]][["method"]], "ml")) stop(
+    "to compute profile loglikelihood, parameters must be estimated by ",
+    "maximum likelihood method using control argument 'method = ml'"
+  )
+
+  if(object[["control"]][["settings"]] %in% c("uglobal", "cglobal", "sce")) warning(
+    "parameters have been estimated by global algorithm"
+  )
+
+#### -- prepare objects for computing confidence interval
+
+  ## select subset of fits
+
+  if(!is.null(subset)){
+    stopifnot(is.character(subset) || is.numeric(subset) || is.logical(subset))
+    stopifnot(length(subset) <= length(object[["fit"]]))
+    object[["fit"]] <- object[["fit"]][subset]
+  }
+
+  ## determine nonlinear parameters that were estimated
+
+  fit_param <- sapply(
+    object[["fit"]],
+    function(x){
+      nmes <- names(default_fit_param())
+      res <- rep(NA, length = length(nmes))
+      names(res) <- nmes
+      fit_param <- x[["initial_objects"]][["fit_param"]]
+      res[names(fit_param)] <- fit_param
+      res
+    }
+  )
+  n.fit_param <- rowSums(fit_param, na.rm = TRUE)
+  nmes.fit_param <- names(n.fit_param[n.fit_param > 0L])
+  parm <- parm[parm %in% nmes.fit_param]
+
+  ## labels for the confidence limits
+
+  t.prob <- (1. - level)/2.
+
+  ll.label <- paste0("q", 100 * t.prob, "_")
+  ul.label <- paste0("q", 100 * (1 - t.prob), "_")
+
+
+#### -- compute confidence intervals
+
+  if(identical(type, "normal")){
+
+#### --- ci based on asymptotic normal distribution of ML estimates
+
+    ## extract estimates and standard errors
+
+    t.coef <- coef(object, what = "nonlinear", se = TRUE)
+    t.coef <- t.coef[, grep(paste(parm, collapse = "|"), colnames(t.coef))]
+
+    ## compute confidence intervals
+
+    t.q <- qnorm(t.prob)
+
+    t.lower <- t.coef[, parm] + t.q * t.coef[, paste0("se.", parm)]
+    colnames(t.lower) <- paste0(ll.label, parm)
+    t.upper <- t.coef[, parm] - t.q * t.coef[, paste0("se.", parm)]
+    colnames(t.upper) <- paste0(ul.label, parm)
+
+    t.ci <- cbind(t.lower, t.upper)
+
+    ## rearrange results to a matrix
+
+    t.ci <- lapply(
+      parm,
+      function(i) t.ci[, grep(i, colnames(t.ci))]
+    )
+
+    result <- t.ci[[1]]
+    for(i in 2:length(t.ci)){
+      result <- cbind(result, t.ci[[i]])
+    }
+    rownames(result) <- rownames(t.coef)
+
+  } else {
+
+#### --- ci based on likelihood ratio test
+
+    if(length(object[["fit"]]) > 1L){
+      ncores <- min(ncores, length(object[["fit"]]))
+    } else {
+      ncores <- min(ncores, length(parm))
+    }
+
+    ## loop over all samples
+
+    if(
+      ncores > 1L &&
+      !object[["control"]][["pcmp"]][["fork"]]
+    ){
+
+      ## create a SNOW cluster on windows OS
+
+      options(error = stop_cluster)
+      junk <- sfInit( parallel = TRUE, cpus = ncores )
+
+      ## export required items to workers
+
+      junk <- sfLibrary("parallel", verbose = FALSE, character.only = TRUE)
+      junk <- sfLibrary("soilhypfit", verbose = FALSE, character.only = TRUE)
+
+      ## export required items to workers (if package is installed)
+
+      export.items <- c(
+        "object", "parm",
+        "level", "test", "denominator_df", "root_tol", "froot_tol",
+        "verbose", "ncores", "ll.label", "ul.label"
+      )
+
+      junk <- sfExport(list = export.items)
+
+      t.ci <- sfLapply(names(object[["fit"]]), f.aux, ncores = 1L)
+
+      junk <- stop_cluster()
+
+    } else {
+
+      ## fork child processes on non-windows OS
+
+      t.ci <- mclapply(
+        names(object[["fit"]]),
+        f.aux,
+        mc.cores = ncores,
+        mc.allow.recursive = identical(length(object[["fit"]]), 1L),
+        ncores = ncores
+      )
+
+    }
+
+    ## rearrange results to a matrix
+
+    result <- t(sapply(
+        t.ci, function(x){
+          res <- matrix(NA_real_, nrow = 2L, ncol = length(parm))
+          colnames(res) <- parm
+          rownames(res) <- rownames(x)
+
+          res[, colnames(x)] <- x
+          c(res)
+
+        }
+      ))
+    colnames(result) <- paste0(c(ll.label, ul.label), rep(parm, each = 2L))
+    rownames(result) <- names(object[["fit"]])
+
+  }
+
+#### -- return result
+
+  as.data.frame(result)
 
 }

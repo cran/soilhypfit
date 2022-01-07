@@ -1,5 +1,5 @@
-% 2021-08-23 A. Papritz
-% cd R.user.home/soilhypfit/soilhypfit_01-1/pkg/man
+% 2021-12-22 A. Papritz
+% cd R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_control_fit_wrc_hcc.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_control_fit_wrc_hcc.Rd;
 % hunspell -d en_GB-ise control_fit_wrc_hcc.Rd
 
@@ -42,7 +42,7 @@
 \usage{
 control_fit_wrc_hcc(
     settings = c("uglobal", "ulocal", "clocal", "cglobal", "sce"),
-    method = c("mpd", "ml", "wls"), hessian,
+    method = c("ml", "mpd", "wls"), hessian,
     nloptr = control_nloptr(), sce = control_sce(),
     wrc_model = "vg", hcc_model = "vgm",
     initial_param = c(alpha = 2., n = 1.5, tau = 0.5),
@@ -86,8 +86,8 @@ control_pcmp(ncores = detectCores() - 1L,
   \code{"sce"} to choose the approach for the nonlinear optimisation, see
   \emph{Details} and \code{\link{soilhypfitIntro}}.}
 
-  \item{method}{a keyword with possible values \code{"mpd"} (maximum
-  posterior density, default), \code{"ml"} (maximum likelihood) or
+  \item{method}{a keyword with possible values \code{"ml"} (maximum
+  likelihood, default), \code{"mpd"} (maximum posterior density) or
   \code{"wls"} (weighted least squares) to choose the method for estimating
   the nonlinear parameters \mbvec{\nu}{}{}{}{}, see
   \code{\link{soilhypfitIntro}}.}
@@ -139,9 +139,11 @@ control_pcmp(ncores = detectCores() - 1L,
   Genuchten-Mualem model by the \emph{characteristic evaporative length}
   (\cite{Lehmann et al., 2020}), see \code{\link{evaporative-length}} and
   \code{\link{soilhypfitIntro}}.  For consistency with other quantities,
-  the following units should be used for the constants: \itemize{ \item
-  \code{c1}: \eqn{\mathrm{m}^{-1}}{m^-1}, \item \code{c3}:
-  \eqn{\mathrm{m}\,\mathrm{d}^{-1}}{m d^-1}.  } The remaining constants are
+  the following units should be used for the constants:
+  \itemize{
+    \item \code{c1}: \eqn{\mathrm{m}^{-1}}{m^-1},
+    \item \code{c3}: \eqn{\mathrm{m}\,\mathrm{d}^{-1}}{m d^-1}.
+  } The remaining constants are
   dimensionless.}
 
   \item{variable_weight}{a named numeric vector of length 2 that defines
@@ -654,6 +656,9 @@ sce = control_sce(
   \code{\link{vcov}} for computing (co-)variances of the estimated
   nonlinear parameters;
 
+  \code{\link{prfloglik_sample}} for profile loglikelihood
+  computations;
+
   \code{\link{wc_model}} and \code{\link{hc_model}} for currently
   implemented models for soil water retention curves and hydraulic
   conductivity functions;
@@ -669,7 +674,7 @@ sce = control_sce(
 # use of \donttest{} because execution time exceeds 5 seconds
 data(sim_wrc_hcc)
 
-# estimate parameters for a single soil sample by maximizing  posterior density ...
+# estimate parameters for a single soil sample by maximizing loglikelihood ...
 
 # ... with unconstrained, global optimisation algorithm NLOPT_GN_MLSL
 coef(

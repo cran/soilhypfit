@@ -1282,6 +1282,8 @@ estimate_lp <- function(
   ## inequality thetar < thetas) by quadratic programming.
 
   ## 2019-11-27 A. Papritz
+  ## 2022-01-06 AP adjust values of constrained estimates if outside 
+  ##               of allowed bounds
 
 
 #### -- water retention function
@@ -1394,7 +1396,7 @@ estimate_lp <- function(
             thetar <- fit[["solution"]][1]
             thetas <- sum(fit[["solution"]])
 
-          }
+          }          
 
           se.thetar <- NA_real_
           se.thetas <- NA_real_
@@ -1643,6 +1645,17 @@ estimate_lp <- function(
         se.thetar <- 0.
 
       }
+      
+      ## adjust values of thetar and thetas if estimates are outside of
+      ## allowed bounds
+      
+      if(thetar < param_bound[["thetar"]][1] || thetar > thetas){
+        thetar <- min(max(thetar, param_bound[["thetar"]][1]), thetas)
+      }
+      
+      if(thetas > param_bound[["thetas"]][2] || thetas < thetar){
+        thetas <- max(min(thetas, param_bound[["thetas"]][2]), thetar)
+      }  
 
     } else {
 
@@ -1665,389 +1678,6 @@ estimate_lp <- function(
     se.thetas <- NULL
 
   }
-
-
-#   if(wrc){
-#
-#     ## wrc data available, estimation of thetar and thetas
-#
-#     ## prepare data (water content, relative saturation, weights)
-#
-#     d <- data.frame(
-#       wc = wc,
-#       sat = as.double(
-#         sat_model(head.wc, nlp.est, precBits,
-#           wrc_model)
-#       ),
-#       w = weights_wc
-#     )
-#
-#     if(any(fit.linear.param[c("thetar", "thetas")])){
-#
-#       ## estimate either thetar, thetas or both parameters
-#
-#       ## design matrix
-#
-#       XX <- model.matrix(~ 1 + sat, d)
-#
-#       ## matrix and vector coding constraints for thetar and thetas
-#
-#       Amat <- t(
-#         rbind(
-#           thetar.l       = c( 1,  0),  # thetar >= lower limit
-#           thetar.u       = c(-1,  0),  # thetar <= upper limit
-#           thetas.l       = c( 0,  1),  # thetas >= lower limit
-#           thetas.u       = c( 0, -1),  # thetas <= upper limit
-#           thetas.minus.thetar = c( -1, 1)   # thetas - thetar >= 0
-#         )
-#       )
-#       rownames(Amat) <- c("thetar", "thetas")
-#
-#       bvec <- c(
-#         thetar.l =  param_bound[["thetar"]][1],  # thetar >= lower limit
-#         thetar.u = -param_bound[["thetar"]][2],  # thetar <= upper limit
-#         thetas.l =  param_bound[["thetas"]][1],  # thetas >= lower limit
-#         thetas.u = -param_bound[["thetas"]][2],  # thetas <= upper limit
-#         thetas.minus.thetar = 0                  # theta.s - thetar >= 0
-#       )
-#
-#
-# #### ---  estimate thetar and thetas
-#
-#       if(fit.linear.param["thetar"] && fit.linear.param["thetas"]){
-#
-#         ## both parameters
-#
-#         X <- cbind(1. - XX[, 2], XX[, 2])
-#         y <- d[, "wc"]
-#
-#         if(all(is.finite(unlist(param_bound[c("thetar", "thetas")])))){
-#
-#           ## constrained estimation
-#
-#           WX <- d[, "w"] * X
-#
-#           Dmat <- crossprod(X, WX)
-#           dvec <- drop(t(WX) %*% y)
-#
-#           (fit <- try(
-#               solve.QP(Dmat, dvec, Amat, bvec),
-#               silent = TRUE
-#             ))
-#
-#           if(identical(class(fit), "try-error")){
-#
-#             if(all(abs(d$sat - 0.) <= delta_sat_0)){
-#
-#               ## estimate thetar and thetas for zero saturation
-#
-#               thetar <- mean(y)
-#               thetas <- 1.
-#
-#             } else if(all(abs(d$sat - 1.) <= delta_sat_0)){
-#
-#               ## estimate thetar and thetas for full saturation
-#
-#               thetar <- 0.
-#               thetas <- mean(y)
-#
-#             } else {
-#               message <- paste(
-#                 "an error occurred when estimating 'thetar' and 'thetas': \n",
-#                 as.character(fit),
-#                 "\nvalues of nonlinear parameters:\n",
-#                 paste(paste(names(nlp.est), nlp.est), collapse = ", "), "\n"
-#               )
-#               cat(message)
-#               cat("\ndata:\n")
-#               print(d)
-#               cat("\nabs(saturation - 1):\n")
-#               print(abs(d$sat - 1.))
-#               cat("\ndelta.sat.0:", delta_sat_0, "\n")
-#               stop(message)
-#             }
-#
-#           } else {
-#
-#             ## estimate estimate thetar and thetas for  0 < saturation < 1
-#
-#             thetar <- fit[["solution"]][1]
-#             thetas <- fit[["solution"]][2]
-#
-#           }
-#
-#           se.thetar <- NA_real_
-#           se.thetas <- NA_real_
-#
-#         } else {
-#
-#           tmp <- try(chol(t(X) %*% X), silent = TRUE)
-#
-#           if(identical(class(tmp), "try-error")){
-#
-#             ## rank-deficient design matrix
-#
-#             message <- paste(
-#               "an error occurred when estimating 'thetar' and 'thetas': \n",
-#               as.character(tmp),
-#               "\nvalues of nonlinear parameters:\n",
-#               paste(paste(names(nlp.est), nlp.est), collapse = ", "), "\n"
-#             )
-#             cat(message)
-#             cat("\ndata:\n")
-#             print(d)
-#             cat("design matrix:\n")
-#             print(X)
-#             stop(message)
-#
-#           }
-#
-#           ## unconstrained estimation
-#
-#           fit <- lm(y ~ X - 1, weights = d[, "w"])
-#           (fit.coef <- coef(fit))
-#           fit.vcov <- vcov(fit)
-#
-#           thetar <- fit.coef[1]
-#           thetas <- fit.coef[2]
-#           se.thetar <- sqrt(fit.vcov[1, 1])
-#           se.thetas <- sqrt(fit.vcov[2, 2])
-#
-#         }
-#
-#
-#       } else if(fit.linear.param["thetar"] && !fit.linear.param["thetas"]){
-#
-# #### ---  estimate only thetar
-#
-#         X <- 1. - XX[, 2, drop = FALSE]
-#         y <- with(d, wc - lp.fixed["thetas"] * sat)
-#
-#         if(all(is.finite(unlist(param_bound[c("thetar")])))){
-#
-#           ## constrained estimation
-#
-#           sel <- c("thetar.l", "thetar.u")
-#           WX <- d[, "w"] * X
-#
-#           Dmat <- crossprod(X, WX)
-#           dvec <- drop(t(WX) %*% y)
-#
-#           (fit <- try(
-#               solve.QP(
-#                 Dmat, dvec,
-#                 Amat["thetar", sel, drop = FALSE],
-#                 bvec[sel]
-#               ), silent = TRUE
-#             )
-#           )
-#
-#           if(identical(class(fit), "try-error")){
-#
-#             mean.y <- mean(y)
-#
-#             if(
-#               all(abs(d$sat - 0.) <= delta_sat_0) &&
-#               mean.y < lp.fixed["thetas"]
-#             ){
-#
-#               ## estimate thetar for zero saturation
-#
-#               thetar <- mean.y
-#
-#             } else if(all(abs(d$sat - 1.) <= delta_sat_0)){
-#
-#               ## estimate thetar for full saturation
-#
-#               thetar <- 0.
-#
-#             } else {
-#
-#               message <- paste(
-#                 "an error occurred when estimating 'thetar' and 'thetas': \n",
-#                 as.character(fit),
-#                 "\nvalues of nonlinear parameters:\n",
-#                 paste(paste(names(nlp.est), nlp.est), collapse = ", "), "\n"
-#               )
-#               cat(message)
-#               cat("\ndata:\n")
-#               print(d)
-#               cat("\nabs(saturation - 1):\n")
-#               print(abs(d$sat - 1.))
-#               cat("\ndelta.sat.0:", delta_sat_0, "\n")
-#               stop(message)
-#             }
-#
-#           } else {
-#
-#             ## estimate estimate thetar for  0 < saturation < 1
-#
-#             thetar <- fit[["solution"]]
-#
-#           }
-#
-#           se.thetar <- NA_real_
-#
-#         } else {
-#
-#           ## unconstrained estimation
-#
-#           tmp <- try(chol(t(X) %*% X))
-#
-#           if(identical(class(tmp), "try-error")){
-#
-#             ## rank-deficient design matrix
-#
-#             message <- paste(
-#               "an error occurred when estimating 'thetar' and 'thetas': \n",
-#               as.character(tmp),
-#               "\nvalues of nonlinear parameters:\n",
-#               paste(paste(names(nlp.est), nlp.est), collapse = ", "), "\n"
-#             )
-#             cat(message)
-#             cat("\ndata:\n")
-#             print(d)
-#             cat("design matrix:\n")
-#             print(X)
-#             stop(message)
-#
-#           }
-#
-#           (fit <- lm(y ~ X - 1, weights = d[, "w"]))
-#           thetar <- coef(fit)
-#           se.thetar <- c(sqrt(vcov(fit)))
-#
-#         }
-#
-#         thetas <- lp.fixed["thetas"]
-#         se.thetas <- 0.
-#
-#
-#       } else if(!fit.linear.param["thetar"] && fit.linear.param["thetas"]){
-#
-# #### ---  estimate only thetas
-#
-#         X <- XX[, 2, drop = FALSE]
-#         y <- with(d, wc - lp.fixed["thetar"] * (1. - sat))
-#
-#         if(all(is.finite(unlist(param_bound[c("thetas")])))){
-#
-#           ## constrained estimation
-#
-#           sel <- c("thetas.l", "thetas.u")
-#           WX <- d[, "w"] * X
-#
-#           Dmat <- crossprod(X, WX)
-#           dvec <- drop(t(WX) %*% y)
-#
-#           (fit <- try(
-#               solve.QP(
-#                 Dmat, dvec,
-#                 Amat["thetas", sel, drop = FALSE],
-#                 bvec[sel]
-#               )
-#             )
-#           )
-#
-#           if(identical(class(fit), "try-error")){
-#
-#             mean.y <- mean(y)
-#
-#             if(all(abs(d$sat - 0.) <= delta_sat_0)){
-#
-#               ## estimate thetas for zero saturation
-#
-#               thetas <- 1.
-#
-#             } else if(
-#               all(abs(d$sat - 1.) <= delta_sat_0) &&
-#               mean.y > lp.fixed["thetar"]
-#             ){
-#
-#               ## estimate thetas for full saturation
-#
-#               thetas <- mean.y
-#
-#             } else {
-#
-#               message <- paste(
-#                 "an error occurred when estimating 'thetar' and 'thetas': \n",
-#                 as.character(fit),
-#                 "\nvalues of nonlinear parameters:\n",
-#                 paste(paste(names(nlp.est), nlp.est), collapse = ", "), "\n"
-#               )
-#               cat(message)
-#               cat("\ndata:\n")
-#               print(d)
-#               cat("\nabs(saturation - 1):\n")
-#               print(abs(d$sat - 1.))
-#               cat("\ndelta.sat.0:", delta_sat_0, "\n")
-#               stop(message)
-#             }
-#
-#           } else {
-#
-#             thetas <- fit[["solution"]]
-#
-#           }
-#           se.thetas <- NA_real_
-#
-#         } else {
-#
-#           ## unconstrained estimation
-#
-#           tmp <- try(chol(t(X) %*% X))
-#
-#           if(identical(class(tmp), "try-error")){
-#
-#             ## rank-deficient design matrix
-#
-#             message <- paste(
-#               "an error occurred when estimating 'thetar' and 'thetas': \n",
-#               as.character(tmp),
-#               "\nvalues of nonlinear parameters:\n",
-#               paste(paste(names(nlp.est), nlp.est), collapse = ", "), "\n"
-#             )
-#             cat(message)
-#             cat("\ndata:\n")
-#             print(d)
-#             cat("design matrix:\n")
-#             print(X)
-#             stop(message)
-#           }
-#
-#           (fit <- lm(y ~ X - 1, weights = d[, "w"]))
-#           thetas <- coef(fit)
-#           se.thetas <- c(sqrt(vcov(fit)))
-#
-#         }
-#
-#         thetar <- lp.fixed["thetar"]
-#         se.thetar <- 0.
-#
-#       }
-#
-#     } else {
-#
-#       ## thetar and thetas both fixed
-#
-#       thetar <- lp.fixed["thetar"]
-#       thetas <- lp.fixed["thetas"]
-#       se.thetar <- 0.
-#       se.thetas <- 0.
-#
-#     }
-#
-#   } else {
-#
-#     ## no wrc data
-#
-#     thetar    <- NULL
-#     se.thetar <- NULL
-#     thetas    <- NULL
-#     se.thetas <- NULL
-#
-#   }
 
 
 #### -- hydraulic conductivity function
@@ -2165,7 +1795,14 @@ estimate_lp <- function(
           }
 
           se.k0 <- NA_real_
-
+          
+          ## adjust values of thetar and thetas if estimates are outside of
+          ## allowed bounds
+          
+          if(k0 < param_bound[["k0"]][1] || k0 > param_bound[["k0"]][2]){
+            k0 <- min(max(k0, param_bound[["k0"]][1]), param_bound[["k0"]][2])
+          }
+          
         } else {
 
           ## unconstrained estimation
@@ -2221,8 +1858,8 @@ fit_wrc_hcc_fit <- function(
   i,
   input.data, param, fit_param,
   e0, ratio_lc_lt_bound,
-  wrc, wrc_formula, wrc.mf,
-  hcc, hcc_formula, hcc.mf,
+  wrc, wrc_formula, wrc_mf,
+  hcc, hcc_formula, hcc_mf,
   all.param.name,
   control,
   common.env,
@@ -2252,14 +1889,14 @@ fit_wrc_hcc_fit <- function(
 
   if(wrc){
 
-    wrc.mf <- eval(wrc.mf, environment())
+    wrc_mf <- eval(wrc_mf, environment())
 
     ## check whether the numer of data is sufficient
 
     switch(
       control[["wrc_model"]],
       vg = {
-        if(NROW(wrc.mf) < control[["min_nobs_wc"]]){
+        if(NROW(wrc_mf) < control[["min_nobs_wc"]]){
           warn.message <- "not enough data for fitting model to water retention curve"
           wrc <- FALSE
         }
@@ -2281,15 +1918,15 @@ fit_wrc_hcc_fit <- function(
 
       ## extract response variable and weight
 
-      wc <- model.response(wrc.mf, "numeric")
+      wc <- model.response(wrc_mf, "numeric")
       if(any(range(wc) < 0. | range(wc) > 1.)) stop(
         "volumetric water content data not restricted to [0, 1]"
       )
-      head.wc <- as.vector(model.matrix(update(wrc_formula, . ~ . -1), wrc.mf))
+      head.wc <- as.vector(model.matrix(update(wrc_formula, . ~ . -1), wrc_mf))
       if(any(head.wc < 0.)) stop(
         "negative head for water retention curve"
       )
-      weights_wc <- as.vector(model.weights(wrc.mf))
+      weights_wc <- as.vector(model.weights(wrc_mf))
       if(any(weights_wc < 0.)) stop(
         "negative weights for water retention curve"
       )
@@ -2306,14 +1943,14 @@ fit_wrc_hcc_fit <- function(
 
   if(hcc){
 
-    hcc.mf <- eval(hcc.mf, environment())
+    hcc_mf <- eval(hcc_mf, environment())
 
     ## check whether the number of data is sufficient
 
     switch(
       control[["hcc_model"]],
       vgm = {
-        if(NROW(hcc.mf) < control[["min_nobs_hc"]]){
+        if(NROW(hcc_mf) < control[["min_nobs_hc"]]){
           tmp <- "not enough data for fitting model to hydraulic conductivity curve"
           warn.message <- if(nchar(warn.message)){
             paste0(warn.message, "; ", tmp)
@@ -2337,15 +1974,15 @@ fit_wrc_hcc_fit <- function(
 
       ## extract response variable and weight
 
-      hc <- model.response(hcc.mf, "numeric")
+      hc <- model.response(hcc_mf, "numeric")
       if(any(hc < 0.)) stop(
         "negative hydraulic conductivity data"
       )
-      head.hc <- as.vector(model.matrix(update(hcc_formula, . ~ . -1), hcc.mf))
+      head.hc <- as.vector(model.matrix(update(hcc_formula, . ~ . -1), hcc_mf))
       if(any(head.hc < 0.)) stop(
         "negative head for hydraulic conductivity data"
       )
-      weights_hc <- as.vector(model.weights(hcc.mf))
+      weights_hc <- as.vector(model.weights(hcc_mf))
       if(any(weights_wc < 0.)) stop(
         "negative weights for ydraulic conductivity data"
       )
@@ -2833,8 +2470,8 @@ fit_wrc_hcc_fit <- function(
       hcc = get("residuals.hc", common.env)
     ),
     model = list(
-      wrc = if(wrc) wrc.mf else NULL,
-      hcc = if(hcc) hcc.mf else NULL
+      wrc = if(wrc) wrc_mf else NULL,
+      hcc = if(hcc) hcc_mf else NULL
     ),
     initial_objects = initial_objects
   )

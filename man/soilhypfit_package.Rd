@@ -1,5 +1,5 @@
-% 2021-12-06 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-1/pkg/man
+% 2021-12-22 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_package.Rd;  open bla.html; R CMD Rd2pdf --force soilhypfit_package.Rd;
 % hunspell -d en_GB-ize soilhypfit_package.Rd
 
@@ -38,11 +38,11 @@
 
     The main function, \code{\link{fit_wrc_hcc}}, estimates parameters of
     models for soil water retention and hydraulic conductivity by
-    \emph{maximum posterior density} (mpd, default), \emph{maximum likelihood} (ml)
-    \emph{estimation} (\cite{Stewart et al., 1992}) or nonlinear
-    \emph{weighted least squares} (wls) from data on volumetric \emph{soil
-    water content}, \mbvec{\theta}{T}{^T}{=(\theta_1, \theta_2, ...,
-    \theta_{n_\theta})}, and/or \emph{soil hydraulic conductivity},
+    \emph{maximum likelihood} (ml, default), \emph{maximum posterior
+    density} (mpd) \emph{estimation} (\cite{Stewart et al., 1992}) or
+    nonlinear \emph{weighted least squares} (wls) from data on volumetric
+    \emph{soil water content}, \mbvec{\theta}{T}{^T}{=(\theta_1, \theta_2,
+    ..., \theta_{n_\theta})}, and/or \emph{soil hydraulic conductivity},
     \mbvec{K}{T}{^T}{=(K_1, K_2, ..., K_{n_K})}, both measured at given
     capillary pressure head, \mbvec{h}{T}{^T}{=(h_1, h_2, ...)}.
 
@@ -72,8 +72,10 @@
     model parameters (see below and \cite{Bates and Watts, 1988, sec. 3.3.5}),
     and
     \eqn{\varepsilon_{\theta,i}}{\epsilon_{\theta,i}} and
-    \eqn{\varepsilon_{K,j}}{\epsilon_{K,j}} are independent, normally distributed errors
-    with zero means and variances \eqn{\sigma^2_\theta} and \eqn{\sigma^2_K}, respectively.
+    \eqn{\varepsilon_{K,j}}{\epsilon_{K,j}} are independent,
+    normally distributed errors
+    with zero means and variances \eqn{\sigma^2_\theta}
+    and \eqn{\sigma^2_K}, respectively.
 
 
     % objective function
@@ -148,8 +150,9 @@
       w_{K,j} = w_K\, w^\prime_{K,j}
     }{w_{K,j} = w_K * w^\prime_{K,j}}.
 
-    The objective function for mpd and ml estimation is equal to
-    (\cite{Stewart et al., 1992}, eqs 15 and 14, respectively)
+    The objective function for ml and mpd estimation
+    is equal to (\cite{Stewart et al., 1992},
+    eqs 14 and 15, respectively)
     \deqn{
       Q(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
         \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
@@ -167,6 +170,26 @@
     where \eqn{\kappa_v = n_v + 2} for mpd and \eqn{\kappa_v = n_v} for ml
     estimation, \eqn{v \in (\theta, K)},
     and weights \eqn{w_{\theta,i} = w_{K,j} = 1}.
+    Note that
+    \eqn{
+      Q(\mbox{\boldmath$\mu$\unboldmath},
+      \mbox{\boldmath$\nu$\unboldmath}; \mbox{\boldmath$\theta$\unboldmath},
+      \mbox{\boldmath$K$\unboldmath}, \mbox{\boldmath$h$\unboldmath})
+    }{
+      Q(\mu, \nu; \theta, K, h)
+    } is equal to the negative logarithm of the
+    concentrated loglikelihood or the concentrated posterior density,
+    obtained by replacing
+    \eqn{\sigma^2_\theta} and \eqn{\sigma^2_K} by their conditional maximum
+    likelihood or maximum density estimates
+    \eqn{
+      \widehat{\sigma}^2_\theta(\mbox{\boldmath$\mu$\unboldmath}),
+      \mbox{\boldmath$\nu$\unboldmath})
+    }{hatsigma^2_\theta(\mu, \nu)} and
+    \eqn{
+      \widehat{\sigma}^2_K(\mbox{\boldmath$\mu$\unboldmath})
+    }{hat\sigma^2_K(\mu, \nu)}
+    respectively (\cite{Stewart et al., 1992}, p. 642).
 
     For wls the objective function is equal to
     \deqn{
@@ -346,7 +369,7 @@
     % estimating the error variances
 
     For mpd and ml estimation the variances of the model errors are estimated by
-    (\cite{Stewart et al., 1992})
+    (\cite{Stewart et al., 1992}, eq. 16)
     \deqn{
       \widehat{\sigma}_\theta^2 = \frac{Q_{\theta}(
         \widehat{\mbox{\boldmath$\mu$\unboldmath}}(\widehat{\mbox{\boldmath$\nu$\unboldmath}}),
@@ -620,7 +643,7 @@
 
 \references{
   Bates, D. M., and Watts, D. G. (1988) Nonlinear Regression Analysis and its
-  Applications John Wiley & Sons, New York \doi{10.1002/9780470316757}.
+  Applications. John Wiley & Sons, New York \doi{10.1002/9780470316757}.
 
   Duan, Q., Sorooshian, S., and Gupta, V. K. (1994) Optimal use of the
   SCE-UA global optimisation method for calibrating watershed models,
@@ -678,6 +701,9 @@
 
   \code{\link{vcov}} for computing (co-)variances of the estimated
   nonlinear parameters;
+
+  \code{\link{prfloglik_sample}} for profile loglikelihood
+  computations;
 
   \code{\link{wc_model}} and \code{\link{hc_model}} for currently
   implemented models for soil water retention curves and hydraulic

@@ -1,4 +1,4 @@
-% 2020-06-10 A. Papritz
+% 2021-12-20 A. Papritz
 % R CMD Rdconv -t html -o bla.html soilhypfit_internal_functions.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_internal_functions.Rd
 % hunspell -d en_GB-ise internal_functions.Rd
 
@@ -61,6 +61,9 @@ can be accessed by typing \code{soilhypfit:::\var{function-name}}.
 
   \code{\link{vcov}} for computing (co-)variances of the estimated
   nonlinear parameters;
+
+  \code{\link{prfloglik_sample}} for profile loglikelihood
+  computations;
 
   \code{\link{wc_model}} and \code{\link{hc_model}} for currently
   implemented models for soil water retention curves and hydraulic
