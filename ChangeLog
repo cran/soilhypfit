@@ -54,7 +54,7 @@
 
 2021-07-21  Andreas Papritz  <papritz@env.ethz.ch>
 
-* soilhypfit_exported_functions.R (control_fit_wrc_hcc): new default 
+* soilhypfit_exported_functions.R (control_fit_wrc_hcc): new default
 initial values for the nonlinear parameters alpha and n
 
 
@@ -91,7 +91,7 @@ initial values for the nonlinear parameters alpha and n
 
 2021-12-15  Andreas Papritz  <papritz@env.ethz.ch>
 
-* soilhypfit_S3methods.R (vcov.fit_wrc_hcc): nwarning if standard errors of nonlinear parameters are computed for a fit with global algorithm
+* soilhypfit_S3methods.R (vcov.fit_wrc_hcc): warning if standard errors of nonlinear parameters are computed for a fit with global algorithm
 
 
 2021-12-20 Andreas Papritz  <papritz@env.ethz.ch>
@@ -116,7 +116,7 @@ initial values for the nonlinear parameters alpha and n
 
 2021-12-29 Andreas Papritz  <papritz@env.ethz.ch>
 
-* soilhypfit_exported_functions.R (fit_wrc_hcc): sample_id_variable stored as additional component in output new method to match input.data and sample-specific data for param, fit_param, lower_param, upper_param, e0 ratio_lc_lt_bound
+* soilhypfit_exported_functions.R (fit_wrc_hcc): sample_id_variable stored as additional component in output, new method to match input.data and sample-specific data for param, fit_param, lower_param, upper_param, e0 ratio_lc_lt_bound
 * soilhypfit_exported_functions.R (prfloglik_sample): small changes
 * soilhypfit_exported_functions.R (confint_prfloglik_sample): new function
 * soilhypfit_private_functions.R (change_function_call_set_onexxx_to_value): correction of error when param missing in call
@@ -124,10 +124,10 @@ initial values for the nonlinear parameters alpha and n
 
 2022-01-02 Andreas Papritz  <papritz@env.ethz.ch>
 
-* soilhypfit_exported_functions.R (fit_wrc_hcc): wrc, wrc_formula, wrc_mf, hcc, hcc_formula, hcc_mf stored as additional components in output 
+* soilhypfit_exported_functions.R (fit_wrc_hcc): wrc, wrc_formula, wrc_mf, hcc, hcc_formula, hcc_mf stored as additional components in output
 * soilhypfit_exported_functions.R (prfloglik_sample): new version calling directly fit_wrc_hcc_fit
 * soilhypfit_exported_functions.R (confint_prfloglik_sample): changes for using new version of prfloglik_sample
-* soilhypfit_private_functions.R (change_function_call_set_onexxx_to_value, change_function_call_set_onefitxxx_to_value, change_function_call_set_x_to_value, change_function_call_set_x_to_value_in_fun): omission of these functions because new version of prfloglik_sample requires them
+* soilhypfit_private_functions.R (change_function_call_set_onexxx_to_value, change_function_call_set_onefitxxx_to_value, change_function_call_set_x_to_value, change_function_call_set_x_to_value_in_fun): omission of these functions because new version of prfloglik_sample requires them no longer
 
 
 2022-01-02 Andreas Papritz  <papritz@env.ethz.ch>
@@ -145,3 +145,24 @@ initial values for the nonlinear parameters alpha and n
 
 * soilhypfit_private_functions.R (estimate_lp): adjust values of thetar and thetas if outside of allowed bounds
 * soilhypfit_exported_functions.R (prfloglik_sample): adjust values of thetar and thetas if outside of allowed bounds
+
+
+2022-01-17 Andreas Papritz  <papritz@env.ethz.ch>
+
+* soilhypfit_exported_functions.R (control_fit_wrc_hcc): use of new function model_param_tf_nlp_identity to choose identity transformation for nonlinear parameters
+* soilhypfit_exported_functions.R (fit_wrc_hcc): use of new functions model_fit_param_consistent for preparing parameter estimation
+* soilhypfit_private_functions.R (model_names_nlp_lp, model_fit_param_consistent, model_param_tf_nlp_identity): new functions for handling names of model parameters, fitting flags and parameter transformations for different models
+* soilhypfit_private_functions.R (fit_wrc_hcc_fit): changes for processing values of nonlinear parameters
+
+
+2022-08-29 Andreas Papritz  <papritz@retired.ethz.ch>
+
+* soilhypfit_S3methods.Rd: changes for KaTeX
+* soilhypfit_control_fit_wrc_hcc.Rd: changes for KaTeX
+* soilhypfit_evaporative_length.Rd: changes for KaTeX
+* soilhypfit_fit_wrc_hcc.Rd: changes for KaTeX
+* soilhypfit_hcc_model.Rd: changes for KaTeX
+* soilhypfit_package.Rd: changes for KaTeX
+* soilhypfit_prfloglik.Rd: changes for KaTeX
+* soilhypfit_vcov.Rd: changes for KaTeX
+* soilhypfit_wrc_model.Rd: changes for KaTeX

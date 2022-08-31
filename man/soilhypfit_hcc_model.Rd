@@ -1,5 +1,5 @@
-% 2021-12-20 A. Papritz
-% cd R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_hcc_model.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_hcc_model.Rd;
 % hunspell -d en_GB-ise hcc_model.Rd
 
@@ -14,7 +14,7 @@
 \concept{hydraulic conductivity function}
 \concept{saturated hydraulic conductivity}
 
-% \newcommand{\mbvec}{\eqn{\mbox{\boldmath$#1$\unboldmath}^\mathrm{#2} #4}{#1#3#4}}
+% \newcommand{\mbvec}{\eqn{\boldsymbol{#1}^\mathrm{#2} #3}}
 
 \title{
 Models for Soil Hydraulic Conductivity Functions
@@ -46,7 +46,7 @@ hc_model(h, nlp, lp, precBits = NULL, hcc_model = "vgm")
 
   \item{nlp}{a mandatory named numeric vector, currently with elements
   named \code{"alpha"}, \code{"n"} and \code{"tau"}, which are the
-  \emph{nonlinear} parameters \mbvec{\nu}{T}{^T}{= (\alpha, n, \tau)}, where
+  \emph{nonlinear} parameters \mbvec{\nu}{T}{= (\alpha, n, \tau)}, where
   \eqn{\alpha}, \eqn{n} and \eqn{\tau} are the inverse air entry pressure,
   the shape and the tortuosity parameters, see \emph{Details}.  For
   consistency with other quantities, the unit of \eqn{\alpha} should be
@@ -80,11 +80,11 @@ Genuchten-Mualem model (\cite{Van Genuchten, 1980}) with the restriction
 \eqn{m = 1 - \frac{1}{n}}{m=1 - 1/n}, i.e. by
 %
 \deqn{
-  k_\mathrm{VGM}(h; \mbox{\boldmath$\nu$\unboldmath}) =
-    S_\mathrm{VG}(h; \mbox{\boldmath$\nu$\unboldmath})^\tau \,
+  k_\mathrm{VGM}(h; \boldsymbol{\nu}) =
+    S_\mathrm{VG}(h; \boldsymbol{\nu})^\tau \,
     \left[
       1 - \left(
-        1 - S_\mathrm{VG}(h; \mbox{\boldmath$\nu$\unboldmath})^\frac{n}{n-1}
+        1 - S_\mathrm{VG}(h; \boldsymbol{\nu})^\frac{n}{n-1}
       \right)^\frac{n-1}{n}
     \right]^2,
 }{k_VGM(h; \nu) =
@@ -92,21 +92,21 @@ Genuchten-Mualem model (\cite{Van Genuchten, 1980}) with the restriction
 }
 %
 \deqn{
-  K_\mathrm{VGM}(h; \mbox{$\mu$}, \mbox{\boldmath$\nu$\unboldmath}) =
-  K_0 \, k_\mathrm{VGM}(h; \mbox{\boldmath$\nu$\unboldmath}),
+  K_\mathrm{VGM}(h; \mbox{$\mu$}, \boldsymbol{\nu}) =
+  K_0 \, k_\mathrm{VGM}(h; \boldsymbol{\nu}),
 }{
   K_VGM(h; \mu, \nu) = K_0 * k_VGM(h; \nu),
 }
 %
 where \eqn{\mu = K_0} is the saturated hydraulic conductivity (\eqn{K_0 >
 0}),
-\mbvec{\nu}{T}{^T}{= (\alpha, n, \tau)} are the inverse air entry pressure
+\mbvec{\nu}{T}{= (\alpha, n, \tau)} are the inverse air entry pressure
 (\eqn{\alpha > 0}), the shape (\eqn{n > 1}) and tortuosity parameter
 (\eqn{\tau > -2}), and \eqn{S_\mathrm{VG}(h;
-\mbox{\boldmath$\nu$\unboldmath})}{S_VG(h; \nu)} is the the volumetric
+\boldsymbol{\nu})}{S_VG(h; \nu)} is the the volumetric
 water saturation, see \code{sat_model} for an expression.
 
-Note that \eqn{\mu} and \mbvec{\nu}{}{}{} are passed to the functions by
+Note that \eqn{\mu} and \mbvec{\nu}{}{} are passed to the functions by
 the arguments \code{lp} and \code{nlp}, respectively.}
 
 % value
@@ -127,7 +127,7 @@ the arguments \code{lp} and \code{nlp}, respectively.}
 % author
 
 \author{
-   Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+   Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also

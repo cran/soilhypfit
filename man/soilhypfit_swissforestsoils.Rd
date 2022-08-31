@@ -1,5 +1,5 @@
-% 2021-12-20 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_swissforestsoils.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_swissforestsoils.Rd;
 % hunspell -d en_GB-ise swissforestsoils.Rd
 

@@ -1282,7 +1282,7 @@ estimate_lp <- function(
   ## inequality thetar < thetas) by quadratic programming.
 
   ## 2019-11-27 A. Papritz
-  ## 2022-01-06 AP adjust values of constrained estimates if outside 
+  ## 2022-01-06 AP adjust values of constrained estimates if outside
   ##               of allowed bounds
 
 
@@ -1396,7 +1396,7 @@ estimate_lp <- function(
             thetar <- fit[["solution"]][1]
             thetas <- sum(fit[["solution"]])
 
-          }          
+          }
 
           se.thetar <- NA_real_
           se.thetas <- NA_real_
@@ -1645,17 +1645,17 @@ estimate_lp <- function(
         se.thetar <- 0.
 
       }
-      
+
       ## adjust values of thetar and thetas if estimates are outside of
       ## allowed bounds
-      
+
       if(thetar < param_bound[["thetar"]][1] || thetar > thetas){
         thetar <- min(max(thetar, param_bound[["thetar"]][1]), thetas)
       }
-      
+
       if(thetas > param_bound[["thetas"]][2] || thetas < thetar){
         thetas <- max(min(thetas, param_bound[["thetas"]][2]), thetar)
-      }  
+      }
 
     } else {
 
@@ -1795,14 +1795,14 @@ estimate_lp <- function(
           }
 
           se.k0 <- NA_real_
-          
+
           ## adjust values of thetar and thetas if estimates are outside of
           ## allowed bounds
-          
+
           if(k0 < param_bound[["k0"]][1] || k0 > param_bound[["k0"]][2]){
             k0 <- min(max(k0, param_bound[["k0"]][1]), param_bound[["k0"]][2])
           }
-          
+
         } else {
 
           ## unconstrained estimation
@@ -1878,6 +1878,7 @@ fit_wrc_hcc_fit <- function(
   ## 2020-01-27 AP ml and mpd estimation
   ## 2021-02-22 AP correction of error when processing empty Hessian matrix
   ## 2021-02-26 AP correction of error for insufficient number of measurements
+  ## 2022-01-17 AP changes for processing values of nonlinear parameters
 
 #### -- get model. frame and required data items
 
@@ -1893,16 +1894,10 @@ fit_wrc_hcc_fit <- function(
 
     ## check whether the numer of data is sufficient
 
-    switch(
-      control[["wrc_model"]],
-      vg = {
-        if(NROW(wrc_mf) < control[["min_nobs_wc"]]){
-          warn.message <- "not enough data for fitting model to water retention curve"
-          wrc <- FALSE
-        }
-      },
-      stop("wrc model '", control[["wrc_model"]], "' not implemented")
-    )
+    if(NROW(wrc_mf) < control[["min_nobs_wc"]]){
+      warn.message <- "not enough data for fitting model to water retention curve"
+      wrc <- FALSE
+    }
 
     ## setting-up terms objects
 
@@ -1947,19 +1942,13 @@ fit_wrc_hcc_fit <- function(
 
     ## check whether the number of data is sufficient
 
-    switch(
-      control[["hcc_model"]],
-      vgm = {
-        if(NROW(hcc_mf) < control[["min_nobs_hc"]]){
-          tmp <- "not enough data for fitting model to hydraulic conductivity curve"
-          warn.message <- if(nchar(warn.message)){
-            paste0(warn.message, "; ", tmp)
-          } else tmp
-          hcc <- FALSE
-        }
-      },
-      stop("hcc model '", control[["hcc_model"]], "' not implemented")
-    )
+    if(NROW(hcc_mf) < control[["min_nobs_hc"]]){
+      tmp <- "not enough data for fitting model to hydraulic conductivity curve"
+      warn.message <- if(nchar(warn.message)){
+        paste0(warn.message, "; ", tmp)
+      } else tmp
+      hcc <- FALSE
+    }
 
     ## setting-up terms objects
 
@@ -2018,189 +2007,228 @@ fit_wrc_hcc_fit <- function(
 
 #### -- prepare initial parameter values
 
-  switch(
-    control[["wrc_model"]],
-    vg = {
-
-      if(wrc){
-
 #### --- wrc
 
-        ## initial values for alpha and n
+  ## get names of nonlinear and linear parameters
 
-        if(
-          any(!c("alpha", "n") %in% names(param))
-        ){
+  tmp <- model_names_nlp_lp(control[["wrc_model"]])
 
-          if(length(grep("local", control[["settings"]]))){
+  names.nlp.wrc <- tmp[["names.nlp"]]
+  names.lp.wrc  <- tmp[["names.lp"]]
 
-            ## compute missing initial values for alpha and/or n for local
-            ## optimization algorithm
+  if(wrc){
 
-            if(verbose >= 0.) warning(
-              "no initial value(s) provided for parameter(s) '",
-              paste(c("alpha", "n")[ !c("alpha", "n") %in% names(param) ], collapse= ", "),
-              "': initial values will be computed"
+    ## water retention data available
+
+    sel.missing.nlp.wrc <- !names.nlp.wrc %in% names(param)
+
+    if(any(sel.missing.nlp.wrc)){
+
+      ## initial values are missing for some nonlinear parameters
+
+      names.missing.nlp.wrc <- names.nlp.wrc[sel.missing.nlp.wrc]
+
+      if(
+        identical(control[["wrc_model"]], "vg") &
+        length(grep("local", control[["settings"]]))
+      ){
+
+        ## initial values of nonlinear parameters alpha and n for Van
+        ## Genuchten model and local algorithm
+
+        ## compute missing initial values for alpha | n for local
+        ## optimization algorithm
+
+        if(verbose >= 0.) warning(
+          "no initial value(s) provided for parameter(s) '",
+          paste(names.missing.nlp.wrc, collapse= "', '"),
+          "': initial values will be computed"
+        )
+
+        ## fit GAM sat ~ s(log(h))
+
+        sel <- head.wc > 0
+        log.head <- log(head.wc[sel])
+
+        sat <- ((wc - min(wc)) / diff(range(wc)))[sel]
+
+        fit.gam <- try(
+          gam(sat ~ s(log.head, k = min(control[["gam_k"]], length(wc)))),
+          silent = TRUE
+        )
+
+        if(identical(class(fit.gam), "try-error")){
+
+          ## fitting gam failed, use default initial values
+          if(verbose >= 0.) warning(
+            "failed to compute initial values for '",
+            paste0(names.missing.nlp.wrc, collapse = "', '"),
+            "': default initial values will be used"
+          )
+          for(i in names.missing.nlp.wrc){
+            param[i] <- unname(control[["initial_param"]][i])
+          }
+
+        } else {
+
+          ## compute initial values from inflection point of fitted gam
+          ## curve
+
+          ## predict saturation from gam
+
+          new.data <- data.frame(
+            log.head = seq(
+              min(log.head), max(log.head), length = control[["gam_n_newdata"]]
+            )
+          )
+          new.data$sat <- predict(fit.gam, newdata = new.data)
+
+          ## find head and saturation where wrc is steepest (inflection
+          ## point)
+
+          i.steep <- which.min(diff(new.data$sat))
+          if(i.steep < NROW(new.data) - 1L) i.steep <- c(i.steep, i.steep + 2)
+
+          sat.steep  <- mean(new.data$sat[i.steep])
+          head.steep <- exp(mean(new.data$log.head[i.steep]))
+
+          if(!"n" %in% names(param)){
+
+            ## use sat.steep to compute missing initial value for n
+
+            eps <- sqrt(.Machine$double.eps)
+            m.initial <- try(
+              uniroot(
+                function(m, s) s - (1 + 1/m)^(-m),
+                interval = c(eps, 1), s = sat.steep
+              ), silent = TRUE
             )
 
-            ## fit GAM sat ~ s(log(h))
-
-            sel <- head.wc > 0
-            log.head <- log(head.wc[sel])
-
-            sat <- ((wc - min(wc)) / diff(range(wc)))[sel]
-
-            fit.gam <- try(
-              gam(sat ~ s(log.head, k = min(control[["gam_k"]], length(wc)))),
-              silent = TRUE
-            )
-
-            if(identical(class(fit.gam), "try-error")){
-
-              ## fitting gam failed, use default initial values
+            if(identical(class(m.initial), "try-error")){
               if(verbose >= 0.) warning(
-                "failed to compute initial values for 'alpha' and 'n': default initial values will be used"
+                "failed to compute initial value for 'n': default initial value will be used"
               )
-
-              if(!"alpha" %in% names(param)){
-                param["alpha"] <- control[["initial_param"]]["alpha"]
-              }
-
-              if(!"n" %in% names(param)){
-                param["n"]     <- control[["initial_param"]]["n"]
-              }
-
-
+              param["n"] <- unname(control[["initial_param"]]["n"])
             } else {
-
-              ## compute initial values from inflection point of fitted gam curve
-
-              ## predict saturation from gam
-
-              new.data <- data.frame(
-                log.head = seq(
-                  min(log.head), max(log.head), length = control[["gam_n_newdata"]]
-                )
-              )
-              new.data$sat <- predict(fit.gam, newdata = new.data)
-
-              ## find head and saturation where wrc is steepest (inflection point)
-
-              i.steep <- which.min(diff(new.data$sat))
-              if(i.steep < NROW(new.data) - 1L) i.steep <- c(i.steep, i.steep + 2)
-
-              sat.steep  <- mean(new.data$sat[i.steep])
-              head.steep <- exp(mean(new.data$log.head[i.steep]))
-
-              ## use sat.steep to compute initial value for n
-
-              eps <- sqrt(.Machine$double.eps)
-              m.initial <- try(
-                uniroot(
-                  function(m, s) s - (1 + 1/m)^(-m),
-                  interval = c(eps, 1), s = sat.steep
-                ), silent = TRUE
-              )
-
-              if(identical(class(m.initial), "try-error")){
-                if(verbose >= 0.) warning("failed to compute initial value for 'n': default initial value will be used" )
-
-                if(!"n" %in% names(param)){
-                  param["n"]     <- control[["initial_param"]]["n"]
-                }
-
-              } else if(!"n" %in% names(param)) {
-
-                param["n"] <- 1. / (1 - m.initial$root)
-
-              }
-
-              m.initial <- 1. - (1. / param["n"])
-
-              ## use head.steep, and n to compute initial value for alpha
-
-              if(!"alpha" %in% names(param)){
-                param["alpha"] <- 1. / head.steep * (1. / m.initial)^(1. - m.initial)
-              }
-
+              param["n"] <- 1. / (1 - m.initial$root)
             }
-          } else {
+          }
 
-            if(!"alpha" %in% names(param)){
-              param["alpha"]     <- control[["initial_param"]]["alpha"]
-            }
-            if(!"n" %in% names(param)){
-              param["n"]     <- control[["initial_param"]]["n"]
-            }
+          m.initial <- 1. - (1. / param["n"])
 
+          ## use head.steep, and n to compute initial value for alpha
+
+          if(!"alpha" %in% names(param)){
+            param["alpha"] <- 1. / head.steep * (1. / m.initial)^(1. - m.initial)
           }
 
         }
 
       } else {
 
-        ## drop unnecessary parameters
+        ## initial values of nonlinear parameters for other models or
+        ## global algorithms
 
-        param <- param[!names(param) %in% c("thetar", "thetas")]
-        fit_param <- fit_param[!names(fit_param) %in% c("thetar", "thetas")]
+        if(verbose >= 0.) warning(
+          "no initial value(s) provided for parameter(s) '",
+          paste0(names.missing.nlp.wrc, collapse= "', '"),
+          "': default initial values will be used"
+        )
+
+        for(i in names.missing.nlp.wrc){
+          param[i] <- unname(control[["initial_param"]][i])
+        }
 
       }
-    },
-    stop("wrc model '", control[["wrc_model"]], "' not implemented")
-  )
+
+    }
+
+  } else {
+
+    ## no water retention data available, drop unnecessary linear
+    ## parameters
+
+    param <- param[!names(param) %in% names.lp.wrc]
+    fit_param <- fit_param[!names(fit_param) %in% names.lp.wrc]
+
+  }
+
 
 #### --- hcc
 
-  switch(
-    control[["hcc_model"]],
-    vgm = {
-      if(hcc){
+  ## get names of nonlinear parameters
 
-        if(!all(c("alpha", "n", "tau")  %in% names(param))){
+  tmp <- model_names_nlp_lp(control[["hcc_model"]])
 
-          if(verbose >= 0.) warning(
-            "no initial value(s) provided for parameter(s) '",
-            paste(c("alpha", "n", "tau")[ !c("alpha", "n", "tau") %in% names(param) ], collapse= ", "),
-            "': default initial values will be used"
-          )
-          if(!"alpha" %in% names(param)) param <- c(
-            alpha = unname(control[["initial_param"]]["alpha"]), param
-          )
-          if(!"n" %in% names(param))     param <- c(
-            n = unname(control[["initial_param"]]["n"]), param
-          )
-          if(!"tau" %in% names(param))   param <- c(
-            tau = unname(control[["initial_param"]]["tau"]), param
-          )
+  names.nlp.hcc <- tmp[["names.nlp"]]
+  names.lp.hcc  <- tmp[["names.lp"]]
 
-        }
+  if(hcc){
 
-        param.lc <- NULL
+    ## conductivity data available
 
-      } else {
+    sel.missing.nlp.hcc <- !names.nlp.hcc %in% names(param)
 
-        ## specifiy values of k0 and tau for computing capillary length Lc
+    if(any(sel.missing.nlp.hcc)){
 
-        param.lc <- c(k0 = NA_real_, tau = unname(control[["initial_param"]]["tau"]))
+      ## initial values are missing for some nonlinear parameters
 
-        if("k0" %in% names(param)){
-          param.lc["k0"] <- param["k0"]
-        }
+      names.missing.nlp.hcc <- names.nlp.hcc[sel.missing.nlp.hcc]
 
-        if("tau" %in% names(param)){
-          param.lc["tau"] <- param["tau"]
-        }
+      ## set missing initial values of nonlinear parameters to defaults
 
-
-        ## drop unnecessary parameters
-
-        param <- param[!names(param) %in% c("k0", "tau")]
-        fit_param <- fit_param[!names(fit_param) %in% c("k0", "tau")]
-
+      if(verbose >= 0.) warning(
+        "no initial value(s) provided for parameter(s) '",
+        paste(names.missing.nlp.hcc, collapse= "', '"),
+        "': default initial values will be used"
+      )
+      for(i in names.missing.nlp.hcc){
+        param[i] <- unname(control[["initial_param"]][i])
       }
-    },
-    stop("hcc model '", control[["hcc_model"]], "' not implemented")
-  )
+
+    }
+
+    param.lc <- NULL
+
+  } else {
+
+    if(identical(control[["hcc_model"]], "vgm")){
+
+      ## specifiy values of k0 and tau for computing capillary length Lc
+
+      param.lc <- c(
+        k0 = NA_real_,
+        tau = unname(control[["initial_param"]]["tau"])
+      )
+
+      if("k0" %in% names(param)){
+        param.lc["k0"] <- param["k0"]
+      }
+
+      if("tau" %in% names(param)){
+        param.lc["tau"] <- param["tau"]
+      }
+
+    } else {
+
+      param.lc <- NULL
+
+    }
+
+    ## drop unnecessary linear and nonlinear extra parameters for hcc
+
+    param <- param[!names(param) %in% c(
+      names.lp.hcc,
+      names.nlp.hcc[!names.nlp.hcc %in% names.nlp.wrc]
+    )]
+    fit_param <- fit_param[!names(fit_param) %in% c(
+      names.lp.hcc, names.nlp.hcc[!names.nlp.hcc %in% names.nlp.wrc]
+    )]
+
+  }
+
+  #     print(param)
+  #     print(fit_param)
 
 #### -- further checks and preparations of initial values
 
@@ -2223,70 +2251,61 @@ fit_wrc_hcc_fit <- function(
 
   ## check whether initial values of parameters are valid
 
-  switch(
-    control[["wrc_model"]],
-    vg = {
-      if(wrc){
+  if(wrc){
 
-        if(!all(c("alpha", "n") %in% param.name)) stop(
-          "some initial values of parameters of water retention function are missing"
+    if(!all(names.nlp.wrc %in% param.name)) stop(
+      "some initial values of parameters of water retention function are missing"
+    )
+    if(!all(c(names.lp.wrc, names.nlp.wrc) %in% fit_param.name)) stop(
+      "some fitting flags of parameters of water retention function are missing"
+    )
+
+    lapply(
+      c(names.nlp.wrc, names(param)[names(param) %in% names.lp.wrc]),
+      function(x, param, bounds){
+        if(param[x] < bounds[[x]][1] || param[x] > bounds[[x]][2]) stop(
+          "\n  initial value of parameter '", x, "' not valid\n"
         )
+      }, param = param, bounds = control[["param_bound"]]
+    )
 
-        if(!all(c("thetar", "thetas", "alpha", "n") %in% fit_param.name)) stop(
-          "some fitting flags of parameters of water retention function are missing"
+  }
+
+  if(hcc){
+
+    if(!all(names.nlp.hcc %in% param.name)) stop(
+      "some initial values of parameters of hydraulic conductivity function are missing"
+    )
+
+    if(!all(c(names.lp.hcc, names.nlp.hcc) %in% fit_param.name)) stop(
+      "some fitting flags of parameters of hydraulic conductivity function are missing"
+    )
+
+    lapply(
+      c(names.nlp.hcc, names(param)[names(param) %in% names.lp.hcc]) ,
+      function(x, param, bounds){
+        if(param[x] < bounds[[x]][1] || param[x] > bounds[[x]][2]) stop(
+          "\n  initial value of parameter '", x, "' not valid\n"
         )
+      }, param = param, bounds = control[["param_bound"]]
+    )
 
-        lapply(
-          c("alpha", "n", names(param)[names(param) %in% c("thetar", "thetas")]),
-          function(x, param, bounds){
-            if(param[x] < bounds[[x]][1] || param[x] > bounds[[x]][2]) stop(
-              "\n  initial value of parameter '", x, "' not valid\n"
-            )
-          }, param = param, bounds = control[["param_bound"]]
-        )
-
-      }
-    },
-    stop("wrc model '", control[["wrc_model"]], "' not implemented")
-  )
-
-  switch(
-    control[["hcc_model"]],
-    vgm = {
-      if(hcc){
-
-        if(!all(c("alpha", "n", "tau") %in% param.name)) stop(
-          "some initial values of parameters  of hydraulic conductivity function are missing"
-        )
-
-        if(!all(c("k0", "alpha", "n", "tau") %in% fit_param.name)) stop(
-          "some fitting flags of parameters of hydraulic conductivity function are missing"
-        )
-
-        lapply(
-          c("alpha", "n", "tau", names(param)[names(param) %in% "k0"]) ,
-          function(x, param, bounds){
-            if(param[x] < bounds[[x]][1] || param[x] > bounds[[x]][2]) stop(
-              "\n  initial value of parameter '", x, "' not valid\n"
-            )
-          }, param = param, bounds = control[["param_bound"]]
-        )
-
-      }   },
-    stop("hcc model '", control[["hcc_model"]], "' not implemented")
-  )
+  }
 
 #### -- parameter transformations
 
   ## check parameter transformation for k0
 
-  if(!is.null(control[["param_tf"]][["k0"]]) && !control[["param_tf"]][["k0"]] %in% c("identity", "log")) stop(
+  if(
+    !is.null(control[["param_tf"]][["k0"]]) &&
+    !control[["param_tf"]][["k0"]] %in% c("identity", "log")
+  ) stop(
     "only log-transformation implemented for 'k0' parameter"
   )
 
   ##  preparation for parameter transformations
 
-  nlp.name <- param.name[!param.name %in% c("thetar", "thetas", "k0")]
+  nlp.name <- param.name[!param.name %in% c(names.lp.wrc, names.lp.hcc)]
 
   all.param_tf <- control[["param_tf"]]
 
@@ -2303,27 +2322,15 @@ fit_wrc_hcc_fit <- function(
 
   stopifnot(all(names(fit_param)[!fit_param] %in% names(param)))
 
-  switch(
-    control[["wrc_model"]],
-    vg = {
-      if(wrc){
-        stopifnot(all(c("alpha", "n") %in% names(param)))
-        stopifnot(all(c("thetar", "thetas", "alpha", "n") %in% names(fit_param)))
-      }
-    },
-    stop("wrc model '", control[["wrc_model"]], "' not implemented")
-  )
+  if(wrc){
+    stopifnot(all(names.nlp.wrc %in% names(param)))
+    stopifnot(all(c(names.lp.wrc, names.nlp.wrc) %in% names(fit_param)))
+  }
 
-  switch(
-    control[["hcc_model"]],
-    vgm = {
-      if(hcc){
-        stopifnot(all(c("alpha", "n", "tau") %in% names(param)))
-        stopifnot(all(c("alpha", "n", "tau", "k0") %in% names(fit_param)))
-      }
-    },
-    stop("hcc model '", control[["hcc_model"]], "' not implemented")
-  )
+  if(hcc){
+    stopifnot(all(names.nlp.hcc %in% names(param)))
+    stopifnot(all(c(names.lp.hcc, names.nlp.hcc) %in% names(fit_param)))
+  }
 
   ## store initial parameter values
 
@@ -2922,5 +2929,175 @@ stop_cluster <- function(){
   }
 
   options(error = NULL)
+
+}
+
+
+################################################################################
+
+### model-dependent functions
+
+#### -- model_names_nlp_lp
+
+model_names_nlp_lp <- function(
+  model
+){
+
+  ## function to define names of nonlinear and linear model parameters
+  ## called in model_fit_param_consistent
+
+  ## 2022-01-09 A. Papritz
+
+  switch(
+    model,
+
+    ## wrc_models
+
+    vg = {
+      ## Van Genuchten model
+      names.nlp <- c("alpha", "n")
+      names.lp  <- c("thetar", "thetas")
+    },
+
+    ## hcc_models
+
+    vgm = {
+      ## Van Genuchten-Mualem model
+      names.nlp <- c("alpha", "n", "tau")
+      names.lp  <- c("k0")
+    },
+
+    stop("model '", model, "' not implemented")
+
+  )
+
+  list(names.nlp = names.nlp, names.lp = names.lp)
+
+}
+
+#### -- model_fit_param_consistent
+
+model_fit_param_consistent <- function(
+  model,
+  fit_param, names.fit_param,
+  param, names.param,
+  verbose
+){
+
+  ## function for consistent coding of flags for fitting for wrc_models
+  ## called in fit_wrc_hcc
+
+  ## 2022-01-13 A. Papritz
+
+  ## define names of nonlinear and linear model parameters
+
+  tmp <- model_names_nlp_lp(model)
+
+  names.nlp <- tmp[["names.nlp"]]
+  names.lp <- tmp[["names.lp"]]
+
+  ## check and adjust fit_param for nonlinear parameters
+
+  sel.missing.nlp <- !names.nlp %in% names.fit_param
+
+  if(any(sel.missing.nlp)){
+
+    names.missing.nlp <- names.nlp[sel.missing.nlp]
+
+    if(verbose >= 0.) warning(
+      "no fitting control provided for parameter(s) '",
+      paste(names.missing.nlp, collapse= "', '"),
+      "': parameters will be fitted"
+    )
+    for(i in names.missing.nlp){
+      fit_param <- cbind(rep(TRUE, NROW(fit_param)), fit_param)
+      colnames(fit_param) <- c(i, colnames(fit_param)[-1])
+    }
+    names.fit_param <- colnames(fit_param)
+
+  }
+
+  #   bla <- sapply(
+  #     names.nlp,
+  #     function(i){
+  #       if(!all(fit_param[, i]) && (is.null(param) || !(i %in% names.param))) stop(
+  #         "no value(s) provided for fixed '", i, "'"
+  #       )
+  #     }
+  #   )
+
+  ## check and adjust fit_param for linear parameters
+
+  sel.missing.lp <- !names.lp %in% names.fit_param
+
+  if(any(sel.missing.lp)){
+
+    names.missing.lp <- names.lp[sel.missing.lp]
+
+    if(verbose >= 0.) warning(
+      "no fitting control provided for parameter(s) '",
+      paste(names.missing.lp, collapse= "', '"),
+      "': parameters will be fitted"
+    )
+    for(i in names.missing.lp){
+      fit_param <- cbind(rep(TRUE, NROW(fit_param)), fit_param)
+      colnames(fit_param) <- c(i, colnames(fit_param)[-1])
+    }
+    names.fit_param <- colnames(fit_param)
+
+  }
+
+  for(i in names.lp){
+
+    if(!all(fit_param[, i]) && (is.null(param) || !(i %in% names.param))) stop(
+      "no value provided for fixed '", i, "'"
+    )
+
+    ## exclude initial value of linear parameter if they are estimated
+
+    if(!is.null(param) && all(fit_param[, i])){
+      param <- param[, !names.param %in% i, drop = FALSE]
+    }
+
+  }
+
+  ## return result
+
+  list(fit_param = fit_param, param = param)
+
+}
+
+#### -- model_param_tf_nlp_identity
+
+model_param_tf_nlp_identity <- function(
+  model
+){
+
+  ## function to choose identity transformation for nonlinear model
+  ## parameters
+  ## called in control_fit_wrc_hcc
+
+  ## 2022-01-08 A. Papritz
+
+  switch(
+    model,
+
+    ## wrc_models
+
+    ## Van Genuchten model
+    vg = param_transf(
+      alpha = "identity", n = "identity"
+    )[c("alpha", "n")],
+
+    ## hcc_models
+
+    ## Van Genuchten-Mualem model
+    vgm = param_transf(
+      alpha = "identity", n = "identity", tau = "identity"
+    )[c("alpha", "n", "tau")],
+
+    stop("model '", model, "' not implemented")
+
+  )
 
 }

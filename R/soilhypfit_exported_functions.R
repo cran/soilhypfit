@@ -449,6 +449,8 @@ control_fit_wrc_hcc <- function(
   ## 2021-12-06 AP new local constrained algorithm NLOPT_LD_CCSAQ
   ## 2021-12-07 AP new default local constrained algorithm NLOPT_LD_CCSAQ
   ## 2021-12-22 AP new default value "ml" for methods argument
+  ## 2022-01-08 AP use of new function model_param_tf_nlp_identity to choose
+  ##               identity transformation for nonlinear parameters
 
 #### -- check arguments
 
@@ -644,25 +646,13 @@ control_fit_wrc_hcc <- function(
 
 #### ---- overwrite default options
 
-    ## overwrite options for parameter transformation for alpha and n and tau
+    ## overwrite options for transformations of nonlinear parameters
 
-    switch(
-      wrc_model,
-      vg = {
-        param_tf[c("alpha", "n")] <- param_transf(
-          alpha = "identity", n = "identity"
-        )[c("alpha", "n")]
-      },
-      stop("wrc model '", wrc_model, "' not implemented")
-    )
+    tmp <- model_param_tf_nlp_identity(wrc_model)
+    param_tf[names(tmp)] <- tmp
 
-    switch(
-      hcc_model,
-      vgm = {
-        param_tf[c("tau")] <- param_transf(tau = "identity")[c("tau")]
-      },
-      stop("hcc model '", hcc_model, "' not implemented")
-    )
+    tmp <- model_param_tf_nlp_identity(hcc_model)
+    param_tf[names(tmp)] <- tmp
 
     ## overwrite default options controlling convergence
 
@@ -842,25 +832,13 @@ control_fit_wrc_hcc <- function(
 
   if(identical(settings, "sce")){
 
-    ## overwrite options for parameter transformation for alpha, n and tau:
+    ## overwrite options for transformations of nonlinear parameters
 
-    switch(
-      wrc_model,
-      vg = {
-        param_tf[c("alpha", "n")] <- param_transf(
-          alpha = "identity", n = "identity"
-        )[c("alpha", "n")]
-      },
-      stop("wrc model '", wrc_model, "' not implemented")
-    )
+    tmp <- model_param_tf_nlp_identity(wrc_model)
+    param_tf[names(tmp)] <- tmp
 
-    switch(
-      hcc_model,
-      vgm = {
-        param_tf[c("tau")] <- param_transf(tau = "identity")[c("tau")]
-      },
-      stop("hcc model '", hcc_model, "' not implemented")
-    )
+    tmp <- model_param_tf_nlp_identity(hcc_model)
+    param_tf[names(tmp)] <- tmp
 
   }
 
@@ -985,6 +963,8 @@ fit_wrc_hcc <- function(
   ## 2021-12-29 AP sample_id_variable stored as additional component in output
   ##               new method to match input.data and sample-specific data for param,
   ##               fit_param, lower_param, upper_param, e0 ratio_lc_lt_bound
+  ## 2022-01-13 AP use of new functions model_fit_param_consistent for
+  ##               preparing parameter estimation
 
   if(!is.finite(verbose)) browser()
 
@@ -1024,11 +1004,11 @@ fit_wrc_hcc <- function(
     }
     if(is.vector(param)) param <- t(as.matrix(param))
     names.param <- colnames(param)
-    names.param <- sapply(
+    names.param <- unname(sapply(
       names.param,
       function(x, choices) match.arg(x, choices),
       choices = all.param.name
-    )
+    ))
     colnames(param) <- names.param
   }
 
@@ -1043,11 +1023,11 @@ fit_wrc_hcc <- function(
   if(is.vector(fit_param)) fit_param <- t(as.matrix(fit_param))
   names.fit_param <- colnames(fit_param)
   if(!missing(fit_param)){
-    names.fit_param <- sapply(
+    names.fit_param <- unname(sapply(
       names.fit_param,
       function(x, choices) match.arg(x, choices),
       choices = all.param.name
-    )
+    ))
     colnames(fit_param) <- names.fit_param
   }
 
@@ -1066,14 +1046,13 @@ fit_wrc_hcc <- function(
     )
     lower_param <- t(as.matrix(lower_param))
   }
-
   names.lower_param <- colnames(lower_param)
   if(!missing(lower_param)){
-    names.lower_param <- sapply(
+    names.lower_param <- unname(sapply(
       names.lower_param,
       function(x, choices) match.arg(x, choices),
       choices = all.param.name
-    )
+    ))
     colnames(lower_param) <- names.lower_param
 
     ## set lower bounds for thetas equal to lower bounds of thetar if
@@ -1103,14 +1082,13 @@ fit_wrc_hcc <- function(
     )
     upper_param <- t(as.matrix(upper_param))
   }
-
   names.upper_param <- colnames(upper_param)
   if(!missing(upper_param)){
-    names.upper_param <- sapply(
+    names.upper_param <- unname(sapply(
       names.upper_param,
       function(x, choices) match.arg(x, choices),
       choices = all.param.name
-    )
+    ))
     colnames(upper_param) <- names.upper_param
 
     ## set upper bounds for thetar equal to upper bounds of thetas if
@@ -1125,148 +1103,54 @@ fit_wrc_hcc <- function(
 
   }
 
-  #   print(param)
-  #   print(fit_param)
+  #     print(param)
+  #     print(fit_param)
 
   ## consistent coding of flags for fitting
 
-  switch(
-    control[["wrc_model"]],
-    vg = {
-      if(wrc){
+  if(wrc){
 
-        ## nonlinear parameters alpha and n
+    tmp <- model_fit_param_consistent(
+      model = control[["wrc_model"]],
+      fit_param = fit_param, names.fit_param = names.fit_param,
+      param = param, names.param = names.param,
+      verbose = verbose
+    )
 
-        if(!all(c("alpha", "n") %in% names.fit_param)){
+    fit_param   <- tmp[["fit_param"]]
+    param       <- tmp[["param"]]
 
-          if(verbose >= 0.) warning(
-            "no fitting control provided for parameter(s) '",
-            paste(c("alpha", "n")[ !c("alpha", "n") %in% names.fit_param ], collapse= ", "),
-            "': parameters will be fitted"
-          )
-          if(!"alpha" %in% names.fit_param) fit_param <- cbind(
-            alpha = rep(TRUE, NROW(fit_param)), fit_param
-          )
-          if(!"n" %in% names.fit_param) fit_param <- cbind(
-            n = rep(TRUE, NROW(fit_param)), fit_param
-          )
+    names.fit_param <- colnames(fit_param)
+    names.param     <- colnames(param)
 
-        }
+  }
 
-        if(!all(fit_param[, "alpha"]) && (is.null(param) || !("alpha" %in% names.param))) stop(
-          "no value provided for fixed 'alpha'"
-        )
-        if(!all(fit_param[, "n"]) && ( !(is.null(param) || "n" %in% names.param))) stop(
-          "no value provided for fixed 'n'"
-        )
+  #     print(param)
+  #     print(fit_param)
 
-        ## linear parameters thetar and thetas
+  if(hcc){
 
-        if(!all(c("thetar", "thetas") %in% names.fit_param)){
+    tmp <- model_fit_param_consistent(
+      model = control[["hcc_model"]],
+      fit_param = fit_param, names.fit_param = names.fit_param,
+      param = param, names.param = names.param,
+      verbose = verbose
+    )
 
-          if(verbose >= 0.) warning(
-            "no fitting control provided for parameter(s) '",
-            paste(c("thetar", "thetas")[ !c("thetar", "thetas") %in% names.fit_param ], collapse= ", "),
-            "': parameters will be fitted"
-          )
-          if(!"thetar" %in% names.fit_param) fit_param <- cbind(
-            thetar = rep(TRUE, NROW(fit_param)), fit_param
-          )
-          if(!"thetas" %in% names.fit_param) fit_param <- cbind(
-            thetas = rep(TRUE, NROW(fit_param)), fit_param
-          )
-        }
+    fit_param   <- tmp[["fit_param"]]
+    param       <- tmp[["param"]]
 
-        if(!all(fit_param[, "thetar"]) && (is.null(param) || !("thetar" %in% names.param))) stop(
-          "no value provided for fixed 'thetar'"
-        )
-        if(!is.null(param) && all(fit_param[, "thetar"])){
-          param <- param[, !names.param %in% "thetar", drop = FALSE]
-          names.param <- names.param[!names.param %in% "thetar"]
-        }
+    names.fit_param <- colnames(fit_param)
+    names.param     <- colnames(param)
 
-
-        if(!all(fit_param[, "thetas"]) && (is.null(param) || !("thetas" %in% names.param))) stop(
-          "no value provided for fixed 'thetas'"
-        )
-        if(!is.null(param) && all(fit_param[, "thetas"])){
-          param <- param[, !names.param %in% "thetas", drop = FALSE]
-          names.param <- names.param[!names.param %in% "thetas"]
-        }
-
-      }
-    },
-    stop("wrc model '", control[["wrc_model"]], "' not implemented")
-  )
-
+  }
 
   #   print(param)
   #   print(fit_param)
 
-  switch(
-    control[["hcc_model"]],
-    vgm = {
-      if(hcc){
 
-        ## nonlinear parameters alpha, n and tau
-
-        if(!all(c("alpha", "n", "tau") %in% names.fit_param)){
-
-          if(verbose >= 0.) warning(
-            "no fitting control provided for parameter(s) '",
-            paste(c("alpha", "n", "tau")[ !c("alpha", "n", "tau") %in% names.fit_param ], collapse= ", "),
-            "': parameters will be fitted"
-          )
-          if(!"alpha" %in% names.fit_param) fit_param <- cbind(
-            alpha = rep(TRUE, NROW(fit_param)), fit_param
-          )
-          if(!"n" %in% names.fit_param)     fit_param <- cbind(
-            n = rep(TRUE, NROW(fit_param)), fit_param
-          )
-          if(!"tau" %in% names.fit_param)   fit_param <- cbind(
-            tau = rep(TRUE, NROW(fit_param)), fit_param
-          )
-
-        }
-
-        if(!all(fit_param[, "alpha"]) && (is.null(param) || !("alpha" %in% names.param))) stop(
-          "no value provided for fixed 'alpha'"
-        )
-        if(!all(fit_param[, "n"]) && ( !(is.null(param) || "n" %in% names.param))) stop(
-          "no value provided for fixed 'n'"
-        )
-        #     if(!all(fit_param[, "tau"]) && (is.null(param) || !("tau" %in% names.param))) stop(
-        #       "no value provided for fixed 'tau'"
-        #     )
-
-        ## linear parameter k0
-
-        if(!"k0" %in% names.fit_param){
-
-          if(verbose >= 0.) warning(
-            "no fitting control provided for parameter 'k0': parameter will be fitted"
-          )
-          fit_param <- cbind(k0 = rep(TRUE, NROW(fit_param)), fit_param)
-
-        }
-
-        if(!all(fit_param[, "k0"]) && (is.null(param) || !("k0" %in% names.param))) stop(
-          "no value provided for fixed 'k0'"
-        )
-        if(!is.null(param) && all(fit_param[, "k0"])){
-          param <- param[, !names.param %in% "k0", drop = FALSE]
-          names.param <- names.param[!names.param %in% "k0"]
-        }
-
-      }
-    },
-    stop("hcc model '", control[["hcc_model"]], "' not implemented")
-  )
-
-#   print(param)
-#   print(fit_param)
-
-#### -- get variable names for water retention and hydraulic conductivity curves
+#### -- get variable names for water retention and hydraulic conductivity
+  ## curves
 
   wrc_mf <- NULL
   if(wrc){
@@ -1665,9 +1549,9 @@ fit_wrc_hcc <- function(
 
   f.aux <- function(i){
 
-    ## note that input.data, wrc, wrc_formula, wrc_mf, hcc, hcc_formula, hcc_mf,
-    ## all.param.name, control, verbose, split.variables
-    ## are taken from parent environment
+    ## note that input.data, wrc, wrc_formula, wrc_mf, hcc, hcc_formula,
+    ## hcc_mf, all.param.name, control, verbose, split.variables are taken
+    ## from parent environment
 
     ## extract data, param, fit_param, e0, ratio_lc_lt_bound
 
@@ -1755,32 +1639,26 @@ fit_wrc_hcc <- function(
 
       ipn <- names(control[["initial_param"]])
 
-      bla <- switch(
-        control[["hcc_model"]],
-        vgm = {
-          if(any(c("alpha", "n", "tau") %in% lupn)){
-            sel.param <- ipn[ipn %in% lupn]
-            if(length(sel.param)){
-              result <- sapply(
-                sel.param,
-                function(xn){
-                  x  <- control[["initial_param"]][xn]
-                  xb <- control[["param_bound"]][[xn]]
-                  unname(ifelse(
-                    x < xb[1], xb[1] + 0.01 * abs(xb[1]),
-                    ifelse(
-                      x > xb[2], xb[2] - 0.01 * abs(xb[2]),
-                      x
-                    )
-                  ))
-                }
-              )
-              control[["initial_param"]][sel.param] <- result
+      if(any(ipn %in% lupn)){
+        sel.param <- ipn[ipn %in% lupn]
+        if(length(sel.param)){
+          result <- sapply(
+            sel.param,
+            function(xn){
+              x  <- control[["initial_param"]][xn]
+              xb <- control[["param_bound"]][[xn]]
+              unname(ifelse(
+                  x < xb[1], xb[1] + 0.01 * abs(xb[1]),
+                  ifelse(
+                    x > xb[2], xb[2] - 0.01 * abs(xb[2]),
+                    x
+                  )
+                ))
             }
-          }
-        },
-        stop("hcc model '", control[["hcc_model"]], "' not implemented")
-      )
+          )
+          control[["initial_param"]][sel.param] <- result
+        }
+      }
 
     }
 
@@ -2064,7 +1942,7 @@ prfloglik_sample <- function(
   ## 2021-12-22 AP correction of errors for parallel computations on windows
   ## 2021-12-28 AP small changes
   ## 2021-12-31 AP new version calling directly fit_wrc_hcc_fit
-  ## 2022-01-06 AP adjust values of thetar and thetas if outside 
+  ## 2022-01-06 AP adjust values of thetar and thetas if outside
   ##               of allowed bounds
 
   if(!is.finite(verbose)) browser()
@@ -2243,21 +2121,21 @@ prfloglik_sample <- function(
 
   ## adjust values for thetar and thetas if estimates are outside of
   ## allowed bounds
-  
+
   if("thetar" %in% names(param)){
     param["thetar"] <- min(
-      max(param["thetar"], param_bound[["thetar"]][1]), 
+      max(param["thetar"], param_bound[["thetar"]][1]),
       param["thetas"]
     )
   }
-  
+
   if("thetas" %in% names(param)){
     param["thetas"] <- max(
-      min(param["thetas"], param_bound[["thetas"]][2]), 
+      min(param["thetas"], param_bound[["thetas"]][2]),
       param["thetar"]
     )
   }
-  
+
 
   ## omit subset argument from modelframes
 

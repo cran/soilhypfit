@@ -1,5 +1,5 @@
-% 2021-12-22 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-01-10 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_package.Rd;  open bla.html; R CMD Rd2pdf --force soilhypfit_package.Rd;
 % hunspell -d en_GB-ize soilhypfit_package.Rd
 
@@ -18,7 +18,7 @@
 
 \docType{package}
 
-% \newcommand{\mbvec}{\eqn{\mbox{\boldmath$#1$\unboldmath}^\mathrm{#2} #4}{#1#3#4}}
+% \newcommand{\mbvec}{\eqn{\boldsymbol{#1}^\mathrm{#2} #3}}
 
 \title{The soilhypfit Package}
 
@@ -41,33 +41,33 @@
     \emph{maximum likelihood} (ml, default), \emph{maximum posterior
     density} (mpd) \emph{estimation} (\cite{Stewart et al., 1992}) or
     nonlinear \emph{weighted least squares} (wls) from data on volumetric
-    \emph{soil water content}, \mbvec{\theta}{T}{^T}{=(\theta_1, \theta_2,
+    \emph{soil water content}, \mbvec{\theta}{T}{=(\theta_1, \theta_2,
     ..., \theta_{n_\theta})}, and/or \emph{soil hydraulic conductivity},
-    \mbvec{K}{T}{^T}{=(K_1, K_2, ..., K_{n_K})}, both measured at given
-    capillary pressure head, \mbvec{h}{T}{^T}{=(h_1, h_2, ...)}.
+    \mbvec{K}{T}{=(K_1, K_2, ..., K_{n_K})}, both measured at given
+    capillary pressure head, \mbvec{h}{T}{=(h_1, h_2, ...)}.
 
     For mpd and ml estimation, the models for the measurements are
     \deqn{
-      \theta_i = \theta(h_i;\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath})
+      \theta_i = \theta(h_i;\boldsymbol{\mu}, \boldsymbol{\nu})
       + \varepsilon_{\theta,i}, \ \ i=1, 2, ..., n_\theta,
     }{
       \theta_i = \theta(h_i; \mu, \nu) + \epsilon_{\theta,i}, i = 1, 2, ..., n_\theta,
     }
     \deqn{
-      \log(K_j) = \log(K(h_j;\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath}))
+      \log(K_j) = \log(K(h_j;\boldsymbol{\mu}, \boldsymbol{\nu}))
       + \varepsilon_{K,j}, \ \ j=1, 2, ..., n_K,
     }{
       log(K_j) = log(K(h_j; \mu, \nu)) + \epsilon_{K,j}, j = 1, 2, ..., n_K,
     }
     where
     \eqn{
-      \theta(h_i; \mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath})
+      \theta(h_i; \boldsymbol{\mu}, \boldsymbol{\nu})
     }{\theta(h_i; \mu, \nu)} and
     \eqn{
-      K(h_j; \mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath})
+      K(h_j; \boldsymbol{\mu}, \boldsymbol{\nu})
     }{K(h_j; \mu, \nu)}
     denote modelled water content and conductivity,
-    \mbvec{\mu}{}{}{}{} and \mbvec{\nu}{}{}{}{} are the
+    \mbvec{\mu}{}{} and \mbvec{\nu}{}{} are the
     \emph{conditionally linear} and \emph{nonlinear}
     model parameters (see below and \cite{Bates and Watts, 1988, sec. 3.3.5}),
     and
@@ -82,21 +82,21 @@
 
     Let
     \deqn{
-      Q_{\theta}(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-      \mbox{\boldmath$\theta$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath}) =\left(
-        \mbox{\boldmath$\theta$\unboldmath} -
-        \mbox{\boldmath$\theta$\unboldmath}(
-          \mbox{\boldmath$h$\unboldmath};
-          \mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath}
+      Q_{\theta}(\boldsymbol{\mu}, \boldsymbol{\nu};
+      \boldsymbol{\theta},
+      \boldsymbol{h}) =\left(
+        \boldsymbol{\theta} -
+        \boldsymbol{\theta}(
+          \boldsymbol{h};
+          \boldsymbol{\mu}, \boldsymbol{\nu}
         )
       \right)^\mathrm{T}
-      \mbox{\boldmath$W$\unboldmath}_\theta
+      \boldsymbol{W}_\theta
       \left(
-        \mbox{\boldmath$\theta$\unboldmath} -
-        \mbox{\boldmath$\theta$\unboldmath}(
-          \mbox{\boldmath$h$\unboldmath};
-          \mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath}
+        \boldsymbol{\theta} -
+        \boldsymbol{\theta}(
+          \boldsymbol{h};
+          \boldsymbol{\mu}, \boldsymbol{\nu}
         )
       \right),
     }{
@@ -105,20 +105,20 @@
     }
     and
     \deqn{
-      Q_{K}(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-       \mbox{\boldmath$K$\unboldmath}, \mbox{\boldmath$h$\unboldmath}) = \left(
-        \log(\mbox{\boldmath$K$\unboldmath}) -
-        \log(\mbox{\boldmath$K$\unboldmath}(
-          \mbox{\boldmath$h$\unboldmath};
-          \mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath}
+      Q_{K}(\boldsymbol{\mu}, \boldsymbol{\nu};
+       \boldsymbol{K}, \boldsymbol{h}) = \left(
+        \log(\boldsymbol{K}) -
+        \log(\boldsymbol{K}(
+          \boldsymbol{h};
+          \boldsymbol{\mu}, \boldsymbol{\nu}
         ))
       \right)^\mathrm{T}
-      \mbox{\boldmath$W$\unboldmath}_K
+      \boldsymbol{W}_K
       \left(
-        \log(\mbox{\boldmath$K$\unboldmath}) -
-        \log(\mbox{\boldmath$K$\unboldmath}(
-          \mbox{\boldmath$h$\unboldmath};
-          \mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath}
+        \log(\boldsymbol{K}) -
+        \log(\boldsymbol{K}(
+          \boldsymbol{h};
+          \boldsymbol{\mu}, \boldsymbol{\nu}
         ))
       \right),
     }{
@@ -126,20 +126,20 @@
     }
     denote the (possibly weighted) residual sums of squares between
     measurements and modelled values.
-    \eqn{\mbox{\boldmath$\theta$\unboldmath}(
-        \mbox{\boldmath$h$\unboldmath};
-        \mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath}
+    \eqn{\boldsymbol{\theta}(
+        \boldsymbol{h};
+        \boldsymbol{\mu}, \boldsymbol{\nu}
       ) )
     }{\theta(h; \mu, \nu))} and
-    \eqn{\mbox{\boldmath$K$\unboldmath}(
-        \mbox{\boldmath$h$\unboldmath};
-        \mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath}
+    \eqn{\boldsymbol{K}(
+        \boldsymbol{h};
+        \boldsymbol{\mu}, \boldsymbol{\nu}
       )
     }{K(h; \mu, \nu)}
     are vectors with modelled values of water content and hydraulic
     conductivity, and
-    \eqn{\mbox{\boldmath$W$\unboldmath}_\theta}{W_\theta} and
-    \eqn{\mbox{\boldmath$W$\unboldmath}_K}{W_K} are optional diagonal matrices
+    \eqn{\boldsymbol{W}_\theta}{W_\theta} and
+    \eqn{\boldsymbol{W}_K}{W_K} are optional diagonal matrices
     with weights \eqn{w_{\theta,i}} and \eqn{w_{K,j}}, respectively.
     The weights are products of \emph{case weights} \eqn{w^\prime_{\theta,i}}
     and \eqn{w^\prime_{K,j}} and \emph{variable weights} \eqn{w_\theta}, \eqn{w_K}, hence
@@ -154,15 +154,15 @@
     is equal to (\cite{Stewart et al., 1992},
     eqs 14 and 15, respectively)
     \deqn{
-      Q(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}
+      Q(\boldsymbol{\mu}, \boldsymbol{\nu};
+        \boldsymbol{\theta}, \boldsymbol{K},
+        \boldsymbol{h}
         ) = \frac{\kappa_\theta}{2}
-        \log( Q_{\theta}(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$h$\unboldmath})) +
+        \log( Q_{\theta}(\boldsymbol{\mu}, \boldsymbol{\nu};
+        \boldsymbol{\theta}, \boldsymbol{h})) +
         \frac{\kappa_K}{2}
-        \log( Q_{K}(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-        \mbox{\boldmath$K$\unboldmath}, \mbox{\boldmath$h$\unboldmath})),
+        \log( Q_{K}(\boldsymbol{\mu}, \boldsymbol{\nu};
+        \boldsymbol{K}, \boldsymbol{h})),
     }{
        Q(\mu, \nu; \theta, K, h) = \kappa_\theta / 2 Q_\theta(\mu, \nu; \theta, h) +
          \kappa_K / 2 Q_K(\mu, \nu; K, h),
@@ -172,9 +172,9 @@
     and weights \eqn{w_{\theta,i} = w_{K,j} = 1}.
     Note that
     \eqn{
-      Q(\mbox{\boldmath$\mu$\unboldmath},
-      \mbox{\boldmath$\nu$\unboldmath}; \mbox{\boldmath$\theta$\unboldmath},
-      \mbox{\boldmath$K$\unboldmath}, \mbox{\boldmath$h$\unboldmath})
+      Q(\boldsymbol{\mu},
+      \boldsymbol{\nu}; \boldsymbol{\theta},
+      \boldsymbol{K}, \boldsymbol{h})
     }{
       Q(\mu, \nu; \theta, K, h)
     } is equal to the negative logarithm of the
@@ -183,32 +183,32 @@
     \eqn{\sigma^2_\theta} and \eqn{\sigma^2_K} by their conditional maximum
     likelihood or maximum density estimates
     \eqn{
-      \widehat{\sigma}^2_\theta(\mbox{\boldmath$\mu$\unboldmath}),
-      \mbox{\boldmath$\nu$\unboldmath})
+      \widehat{\sigma}^2_\theta(\boldsymbol{\mu}),
+      \boldsymbol{\nu})
     }{hatsigma^2_\theta(\mu, \nu)} and
     \eqn{
-      \widehat{\sigma}^2_K(\mbox{\boldmath$\mu$\unboldmath})
+      \widehat{\sigma}^2_K(\boldsymbol{\mu})
     }{hat\sigma^2_K(\mu, \nu)}
     respectively (\cite{Stewart et al., 1992}, p. 642).
 
     For wls the objective function is equal to
     \deqn{
-      Q(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}
-        ) = Q_{\theta}(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$h$\unboldmath}) +
-        Q_{K}(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-        \mbox{\boldmath$K$\unboldmath}, \mbox{\boldmath$h$\unboldmath}).
+      Q(\boldsymbol{\mu}, \boldsymbol{\nu};
+        \boldsymbol{\theta}, \boldsymbol{K},
+        \boldsymbol{h}
+        ) = Q_{\theta}(\boldsymbol{\mu}, \boldsymbol{\nu};
+        \boldsymbol{\theta}, \boldsymbol{h}) +
+        Q_{K}(\boldsymbol{\mu}, \boldsymbol{\nu};
+        \boldsymbol{K}, \boldsymbol{h}).
     }{
        Q(\mu, \nu; \theta, K, h) = Q_\theta(\mu, \nu; \theta, h) +
          Q_K(\mu, \nu; K, h).
     }
     If either water content or conductivity data are not available, then the respective
     terms are omitted from
-    \eqn{Q(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}
+    \eqn{Q(\boldsymbol{\mu}, \boldsymbol{\nu};
+        \boldsymbol{\theta}, \boldsymbol{K},
+        \boldsymbol{h}
         )
     }{Q(\mu, \nu; \theta, K, h)}.
 
@@ -218,15 +218,15 @@
     The function \code{\link{fit_wrc_hcc}} does not attempt to estimate the parameters
     by minimising \cr
     \eqn{
-      Q(\mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath};
-      \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath})
+      Q(\boldsymbol{\mu}, \boldsymbol{\nu};
+      \boldsymbol{\theta}, \boldsymbol{K},
+      \boldsymbol{h})
     }{Q(\mu, \nu; \theta, K, h)} directly with respect to
-    \mbvec{\mu}{}{}{}{} and \mbvec{\nu}{}{}{}{}.
+    \mbvec{\mu}{}{} and \mbvec{\nu}{}{}.
     Rather, it exploits the fact that for \emph{given nonlinear parameters}
-    \mbvec{\nu}{}{}{}{}, the \emph{conditionally linear parameters}
+    \mbvec{\nu}{}{}, the \emph{conditionally linear parameters}
     \eqn{
-      \mbox{\boldmath$\mu$\unboldmath}^T = (\theta_r, \theta_s, \log(K_0))
+      \boldsymbol{\mu}^T = (\theta_r, \theta_s, \log(K_0))
     }{
       \mu^T = (\theta_r, \theta_s, log(K_0))
     }
@@ -235,25 +235,25 @@
 
     \deqn{
       Q_\theta^*(\theta_r, \theta_s;
-      \mbox{\boldmath$\theta$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath})
+      \boldsymbol{\theta},
+      \boldsymbol{h}, \boldsymbol{\nu})
       =\left(
-        \mbox{\boldmath$\theta$\unboldmath} - [
-          \mbox{\boldmath$1$\unboldmath},
-          \mbox{\boldmath$S$\unboldmath}(
-            \mbox{\boldmath$h$\unboldmath};
-            \mbox{\boldmath$\nu$\unboldmath}
+        \boldsymbol{\theta} - [
+          \boldsymbol{1},
+          \boldsymbol{S}(
+            \boldsymbol{h};
+            \boldsymbol{\nu}
           )] \, \left[
             \begin{array}{c} \theta_r \\ \theta_s - \theta_r \end{array}
           \right]
       \right)^\mathrm{T}
-      \mbox{\boldmath$W$\unboldmath}_\theta
+      \boldsymbol{W}_\theta
       \left(
-        \mbox{\boldmath$\theta$\unboldmath} - [
-          \mbox{\boldmath$1$\unboldmath},
-          \mbox{\boldmath$S$\unboldmath}(
-            \mbox{\boldmath$h$\unboldmath};
-            \mbox{\boldmath$\nu$\unboldmath}
+        \boldsymbol{\theta} - [
+          \boldsymbol{1},
+          \boldsymbol{S}(
+            \boldsymbol{h};
+            \boldsymbol{\nu}
           )] \, \left[
             \begin{array}{c} \theta_r \\ \theta_s - \theta_r \end{array}
           \right]
@@ -265,21 +265,21 @@
     }
     with respect to \eqn{\theta_r} and  \eqn{\theta_s-\theta_r} and/or
     \deqn{
-      Q_K^*(K_0; \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath})=
+      Q_K^*(K_0; \boldsymbol{K},
+        \boldsymbol{h}, \boldsymbol{\nu})=
       \left(
-        \log(\mbox{\boldmath$K$\unboldmath}) - \log(K_0  \,
-          \mbox{\boldmath$k$\unboldmath}(
-            \mbox{\boldmath$h$\unboldmath};
-            \mbox{\boldmath$\nu$\unboldmath}
+        \log(\boldsymbol{K}) - \log(K_0  \,
+          \boldsymbol{k}(
+            \boldsymbol{h};
+            \boldsymbol{\nu}
           ))
       \right)^\mathrm{T}
-      \mbox{\boldmath$W$\unboldmath}_K
+      \boldsymbol{W}_K
       \left(
-        \log(\mbox{\boldmath$K$\unboldmath}) - \log(K_0  \,
-          \mbox{\boldmath$k$\unboldmath}(
-            \mbox{\boldmath$h$\unboldmath};
-            \mbox{\boldmath$\nu$\unboldmath}
+        \log(\boldsymbol{K}) - \log(K_0  \,
+          \boldsymbol{k}(
+            \boldsymbol{h};
+            \boldsymbol{\nu}
           ))
       \right),
     }{
@@ -288,25 +288,25 @@
       (log(K) - log(K_0  k(h; \nu))),
     }
     with respect to \eqn{\log(K_0)}{log(K_0)}, where
-    \mbvec{1}{}{}{}{} is a vector of ones,
-    \eqn{\mbox{\boldmath$S$\unboldmath}(
-            \mbox{\boldmath$h$\unboldmath};
-            \mbox{\boldmath$\nu$\unboldmath}
+    \mbvec{1}{}{} is a vector of ones,
+    \eqn{\boldsymbol{S}(
+            \boldsymbol{h};
+            \boldsymbol{\nu}
           )^\mathrm{T} = (
-            S(h_1; \mbox{\boldmath$\nu$\unboldmath}),
+            S(h_1; \boldsymbol{\nu}),
             ...,
-            S(h_{n_\theta}; \mbox{\boldmath$\nu$\unboldmath})
+            S(h_{n_\theta}; \boldsymbol{\nu})
           )
     }{
       S(h;\nu)^T = (S(h_1;\nu), S(h_2;\nu), ..., S(h_{n_\theta};\nu))
     } and
-    \eqn{\mbox{\boldmath$k$\unboldmath}(
-            \mbox{\boldmath$h$\unboldmath};
-            \mbox{\boldmath$\nu$\unboldmath}
+    \eqn{\boldsymbol{k}(
+            \boldsymbol{h};
+            \boldsymbol{\nu}
           )^\mathrm{T} = (
-            k(h_1; \mbox{\boldmath$\nu$\unboldmath}),
+            k(h_1; \boldsymbol{\nu}),
             ...,
-            k(h_{n_K}; \mbox{\boldmath$\nu$\unboldmath})
+            k(h_{n_K}; \boldsymbol{\nu})
           )
     }{
       k(h;\nu)^T = (k(h_1;\nu), k(h_2;\nu), ..., k(h_{n_K};\nu))
@@ -318,12 +318,12 @@
     \eqn{K_0} is the \emph{saturated hydraulic conductivity}.
 
     Unconstrained conditional estimates, say \eqn{
-    \widehat{\theta}_r(\mbox{\boldmath$\nu$\unboldmath})
+    \widehat{\theta}_r(\boldsymbol{\nu})
     }{hat\theta_r(\nu)}, \eqn{
-    \widehat{\theta}_s(\mbox{\boldmath$\nu$\unboldmath}) -
-    \widehat{\theta}_r(\mbox{\boldmath$\nu$\unboldmath}) }{hat\theta_s(\nu)
+    \widehat{\theta}_s(\boldsymbol{\nu}) -
+    \widehat{\theta}_r(\boldsymbol{\nu}) }{hat\theta_s(\nu)
     - hat\theta_r(\nu)} and \eqn{
-    \widehat{\log(K_0)}(\mbox{\boldmath$\nu$\unboldmath}) }{hatlog(K_0)(\nu)} can be
+    \widehat{\log(K_0)}(\boldsymbol{\nu}) }{hatlog(K_0)(\nu)} can be
     easily obtained from the normal equations of the respective (weighted)
     least squares problems, and quadratic programming yields conditional (weighted)
     least squares estimates that honour the inequality constraints \eqn{0
@@ -333,11 +333,11 @@
     % estimating nonlinear parameters
 
     Let \eqn{
-     \widehat{\mbox{\boldmath$\mu$\unboldmath}}(\mbox{\boldmath$\nu$\unboldmath})^\mathrm{T} =
+     \widehat{\boldsymbol{\mu}}(\boldsymbol{\nu})^\mathrm{T} =
      (
-     \widehat{\theta}_r(\mbox{\boldmath$\nu$\unboldmath}),
-     \widehat{\theta}_s(\mbox{\boldmath$\nu$\unboldmath}),
-     \widehat{\log(K_0)}(\mbox{\boldmath$\nu$\unboldmath})
+     \widehat{\theta}_r(\boldsymbol{\nu}),
+     \widehat{\theta}_s(\boldsymbol{\nu}),
+     \widehat{\log(K_0)}(\boldsymbol{\nu})
      )
     }{
       hat\mu(\nu)^T = (hat\theta_r(\nu), hat\theta_s(\nu), hatlog(K_0)(\nu))
@@ -346,24 +346,24 @@
     obtained by minimising
     \eqn{
       Q_\theta^*(\theta_r, \theta_s;
-      \mbox{\boldmath$\theta$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath})
+      \boldsymbol{\theta},
+      \boldsymbol{h}, \boldsymbol{\nu})
     }{Q*_\theta(\theta_r, \theta_s; \theta, h, \nu)},
     and
     \eqn{
       Q_K^*(K_0;
-      \mbox{\boldmath$K$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath})
+      \boldsymbol{K},
+      \boldsymbol{h}, \boldsymbol{\nu})
     }{Q*_K(K_0; K, h, \nu)}, respectively.
     \code{\link{fit_wrc_hcc}} then estimates the
     nonlinear parameters by minimising
     \eqn{
       Q(
-      \widehat{\mbox{\boldmath$\mu$\unboldmath}}(\mbox{\boldmath$\nu$\unboldmath}),
-      \mbox{\boldmath$\nu$\unboldmath};
-      \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath})
-    }{Q(hat\mu(\nu), \nu; \theta, K, h)} with respect to \mbvec{\nu}{}{}{}{}
+      \widehat{\boldsymbol{\mu}}(\boldsymbol{\nu}),
+      \boldsymbol{\nu};
+      \boldsymbol{\theta}, \boldsymbol{K},
+      \boldsymbol{h})
+    }{Q(hat\mu(\nu), \nu; \theta, K, h)} with respect to \mbvec{\nu}{}{}
     by a nonlinear optimisation algorithm.
 
     % estimating the error variances
@@ -372,20 +372,20 @@
     (\cite{Stewart et al., 1992}, eq. 16)
     \deqn{
       \widehat{\sigma}_\theta^2 = \frac{Q_{\theta}(
-        \widehat{\mbox{\boldmath$\mu$\unboldmath}}(\widehat{\mbox{\boldmath$\nu$\unboldmath}}),
-        \widehat{\mbox{\boldmath$\nu$\unboldmath}};
-      \mbox{\boldmath$\theta$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath})}{\kappa_\theta},
+        \widehat{\boldsymbol{\mu}}(\widehat{\boldsymbol{\nu}}),
+        \widehat{\boldsymbol{\nu}};
+      \boldsymbol{\theta},
+      \boldsymbol{h})}{\kappa_\theta},
     }{
       hat\sigma^2_\theta = Q_\theta(hat\mu(hat\nu), hat\nu; \theta, h) / \kappa_\theta,
     }
     and
     \deqn{
       \widehat{\sigma}_K^2 = \frac{Q_{K}(
-        \widehat{\mbox{\boldmath$\mu$\unboldmath}}(\widehat{\mbox{\boldmath$\nu$\unboldmath}}),
-        \widehat{\mbox{\boldmath$\nu$\unboldmath}};
-      \mbox{\boldmath$K$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath})}{\kappa_K}.
+        \widehat{\boldsymbol{\mu}}(\widehat{\boldsymbol{\nu}}),
+        \widehat{\boldsymbol{\nu}};
+      \boldsymbol{K},
+      \boldsymbol{h})}{\kappa_K}.
     }{
       hat\sigma^2_K= Q_K(hat\mu(hat\nu), hat\nu; K, h) / \kappa_K.
     }
@@ -395,32 +395,32 @@
     Furthermore, for mpd and ml estimation, the covariance matrix of the estimated
     nonlinear parameters may be approximated by the inverse Hessian matrix
     of \eqn{
-      Q(\widehat{\mbox{\boldmath$\mu$\unboldmath}}(\mbox{\boldmath$\nu$\unboldmath}),
-      \mbox{\boldmath$\nu$\unboldmath};
-      \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath})
+      Q(\widehat{\boldsymbol{\mu}}(\boldsymbol{\nu}),
+      \boldsymbol{\nu};
+      \boldsymbol{\theta}, \boldsymbol{K},
+      \boldsymbol{h})
     }{Q(hat\mu(\nu), \nu; \theta, K, h)} at the solution
     \eqn{
-      \widehat{\mbox{\boldmath$\nu$\unboldmath}}
+      \widehat{\boldsymbol{\nu}}
     }{hat\nu}
     (\cite{Stewart and \enc{Sørensen}{Soerensen}, 1981}), i.e.
 
     \deqn{
       \mathrm{Cov}[
-        \widehat{\mbox{\boldmath$\nu$\unboldmath}},
-        \widehat{\mbox{\boldmath$\nu$\unboldmath}}^T] \approx
-        \mbox{\boldmath$A$\unboldmath}^{-1},
+        \widehat{\boldsymbol{\nu}},
+        \widehat{\boldsymbol{\nu}}^T] \approx
+        \boldsymbol{A}^{-1},
     }{
       Cov[hat\nu, hat\nu^T] ≈ A^{-1},
     }
     where
     \deqn{
-      [\mbox{\boldmath$A$\unboldmath}]_{kl} =
+      [\boldsymbol{A}]_{kl} =
       \frac{\partial^2}{\partial\nu_k\, \partial\nu_l} \left.
-      Q(\widehat{\mbox{\boldmath$\mu$\unboldmath}}(\mbox{\boldmath$\nu$\unboldmath}),
-      \mbox{\boldmath$\nu$\unboldmath};
-      \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath})\right|_{\nu=\hat{\nu}}.
+      Q(\widehat{\boldsymbol{\mu}}(\boldsymbol{\nu}),
+      \boldsymbol{\nu};
+      \boldsymbol{\theta}, \boldsymbol{K},
+      \boldsymbol{h})\right|_{\nu=\hat{\nu}}.
     }{
       [A]_{k,l} = \partial^2 / (\partial\nu_k, \partial\nu_l)
       Q(hat\mu(\nu), \nu; \theta, K, h)|_(\nu = hat\nu).
@@ -443,9 +443,9 @@
       This model has the following parameters:
 
       \itemize{
-        \item \mbvec{\mu}{T}{^T}{= (\theta_r, \theta_s, K_0)} (see above) and
+        \item \mbvec{\mu}{T}{= (\theta_r, \theta_s, K_0)} (see above) and
 
-        \item \mbvec{\nu}{T}{^T}{= (\alpha, n, \tau)} where \eqn{\alpha} is
+        \item \mbvec{\nu}{T}{= (\alpha, n, \tau)} where \eqn{\alpha} is
         the inverse air entry pressure, \eqn{n} the shape and \eqn{\tau}
         the tortuosity parameter.
 
@@ -470,8 +470,8 @@
       parameters} that vary over the whole real line and can therefore be
       estimated without constraints (see \code{\link{param_transf}}), or it
       uses algorithms (quadratic programming for estimating
-      \mbvec{\mu}{}{}{}, nonlinear optimisation algorithms with box
-      constraints for estimating \mbvec{\nu}{}{}{}) that restrict estimates
+      \mbvec{\mu}{}{}, nonlinear optimisation algorithms with box
+      constraints for estimating \mbvec{\nu}{}{}) that restrict estimates
       to permissible ranges, see \emph{Details} section of
       \code{\link{control_fit_wrc_hcc}}.
 
@@ -495,7 +495,7 @@
       \eqn{L_\mathrm{t}}{L_t} of \eqn{L_\mathrm{c}}{L_c} for given \eqn{n}
       and tortuosity parameter \eqn{\tau}, see
       \code{\link{evaporative-length}}.  \code{\link{fit_wrc_hcc}} allows
-      to constrain estimates of the nonlinear parameters \mbvec{\nu}{}{}{}
+      to constrain estimates of the nonlinear parameters \mbvec{\nu}{}{}
       by defining permissible lower and upper bounds for the ratio
       \eqn{L_\mathrm{c}/L_\mathrm{t}}{L_c/L_t}, see arguments
       \code{ratio_lc_lt_bound} of \code{\link{fit_wrc_hcc}} and
@@ -507,12 +507,12 @@
 
     \subsection{Choice of optimisation algorithm for estimating the nonlinear parameters}{
 
-      To estimate \mbvec{\nu}{}{}{}, \code{\link{fit_wrc_hcc}} minimises
+      To estimate \mbvec{\nu}{}{}, \code{\link{fit_wrc_hcc}} minimises
       \eqn{ Q(
-      \widehat{\mbox{\boldmath$\mu$\unboldmath}}(\mbox{\boldmath$\nu$\unboldmath}),
-      \mbox{\boldmath$\nu$\unboldmath};
-      \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-      \mbox{\boldmath$h$\unboldmath}) }{Q(hat\mu(\nu), \nu; \theta, K, h)}
+      \widehat{\boldsymbol{\mu}}(\boldsymbol{\nu}),
+      \boldsymbol{\nu};
+      \boldsymbol{\theta}, \boldsymbol{K},
+      \boldsymbol{h}) }{Q(hat\mu(\nu), \nu; \theta, K, h)}
       either by a nonlinear optimisation algorithm available in the library
       \emph{NLopt} (Johnson, see \code{\link[nloptr]{nloptr}}) or by the Shuffled
       Complex Evolution (SCE) optimisation algorithm (Duan et al., 1994,
@@ -570,10 +570,10 @@
     \subsection{Computing initial values of parameters}{
 
       For local optimisation algorithms ``good'' initial values of
-      \mbvec{\nu}{}{}{} are indispensable for successful estimation.
+      \mbvec{\nu}{}{} are indispensable for successful estimation.
       \code{\link{fit_wrc_hcc}} allows to compute initial values of
-      \eqn{\alpha} and \eqn{n} from water retention data by the following
-      procedure:
+      \eqn{\alpha} and \eqn{n} for the Van Genuchten model from water
+      retention data by the following procedure:
 
       \enumerate{
 
@@ -593,12 +593,12 @@
          One obtains the right-hand side of this equation by solving
          \eqn{\frac{\partial^2}{\partial y^2}
            \left[
-             S_\mathrm{VG}(\exp(y); \mbox{\boldmath$\nu$\unboldmath})
+             S_\mathrm{VG}(\exp(y); \boldsymbol{\nu})
            \right] = 0
          }{d^2/dy^2[S_VG(exp(y); \nu)] = 0}
          for \eqn{y} and plugging the result into the expression for
          \eqn{
-           S_\mathrm{VG}(\exp(y); \mbox{\boldmath$\nu$\unboldmath}),
+           S_\mathrm{VG}(\exp(y); \boldsymbol{\nu}),
          }{S_VG(exp(y); \nu),}
          see \code{\link{wc_model}}.
 
@@ -615,7 +615,7 @@
          The second expression is again a result of solving
          \eqn{\frac{\partial^2}{\partial y^2}
            \left[
-             S_\mathrm{VG}(\exp(y); \mbox{\boldmath$\nu$\unboldmath})
+             S_\mathrm{VG}(\exp(y); \boldsymbol{\nu})
            \right] = 0.
          }{d^2/dy^2[S_VG(exp(y); \nu)] = 0.}
 
@@ -681,7 +681,7 @@
 % author
 
 \author{
-   Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+   Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also

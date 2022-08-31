@@ -1,5 +1,5 @@
-% 2022-01-02 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_fit_wrc_hcc.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_fit_wrc_hcc.Rd;
 % hunspell -d en_GB-ise fit_wrc_hcc.Rd
 
@@ -15,7 +15,7 @@
 \concept{hydraulic conductivity function}
 \concept{saturated hydraulic conductivity}
 
-% \newcommand{\mbvec}{\eqn{\mbox{\boldmath$#1$\unboldmath}^\mathrm{#2} #4}{#1#3#4}}
+% \newcommand{\mbvec}{\eqn{\boldsymbol{#1}^\mathrm{#2} #3}}
 
 \title{
   Parametric Modelling of Soil Hydraulic Properties
@@ -182,7 +182,7 @@ default_fit_param(
   default \code{lower} and \code{upper} bounds of the ratio
   \eqn{L_\mathrm{c}/L_\mathrm{t}}{L_c/L_t} (\cite{Lehmann et al., 2008,
   2020}) for constrained estimation of the \emph{nonlinear} parameters
-  \mbvec{\nu}{T}{^T}{=(\alpha, n, \tau)} (default values 0.5 (\code{lower})
+  \mbvec{\nu}{T}{=(\alpha, n, \tau)} (default values 0.5 (\code{lower})
   and 2 (\code{upper})), see \code{\link{evaporative-length}} and
   \code{\link{soilhypfitIntro}}.  Note that \code{ratio_lc_lt_bound} is
   ignored when an unconstrained nonlinear optimisation algorithm is chosen
@@ -375,11 +375,11 @@ default_fit_param(
       solution with respect to the (possibly transformed) nonlinear parameters.
 
       \item{\code{lp}}: the estimated values for the linear parameters
-      \mbvec{\mu}{T}{^T}{=(\theta_r, \theta_s, K_0)}, see
+      \mbvec{\mu}{T}{=(\theta_r, \theta_s, K_0)}, see
       \code{\link{wc_model}} and \code{\link{hc_model}}.
 
       \item{\code{nlp}}: the estimated values for the nonlinear parameters
-      \mbvec{\nu}{T}{^T}{=(\alpha, n, \tau)}, see \code{\link{wc_model}} and
+      \mbvec{\nu}{T}{=(\alpha, n, \tau)}, see \code{\link{wc_model}} and
       \code{\link{hc_model}}.
 
       \item{\code{inequality_constraint}}: a list with the values of the
@@ -490,7 +490,7 @@ default_fit_param(
 % author
 
 \author{
-   Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+   Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also

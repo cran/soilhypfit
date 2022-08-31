@@ -1,4 +1,5 @@
-% 2021-12-20 A. Papritz
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_internal_functions.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_internal_functions.Rd
 % hunspell -d en_GB-ise internal_functions.Rd
 
@@ -13,6 +14,9 @@
 \alias{fit_wrc_hcc_fit}
 \alias{gradient_nlp}
 \alias{ineq_constraint_nlp}
+\alias{model_names_nlp_lp}
+\alias{model_fit_param_consistent}
+\alias{model_param_tf_nlp_identity}
 \alias{objective_nlp}
 \alias{stop_cluster}
 
@@ -31,6 +35,9 @@ The unexported internal functions
     \item{\code{fit_wrc_hcc_fit}}
     \item{\code{gradient_nlp}}
     \item{\code{ineq_constraint_nlp}}
+    \item{\code{model_names_nlp_lp}}
+    \item{\code{model_fit_param_consistent}}
+    \item{\code{model_param_tf_nlp_identity}}
     \item{\code{objective_nlp}}
     \item{\code{stop_cluster}}
 }
@@ -41,7 +48,7 @@ can be accessed by typing \code{soilhypfit:::\var{function-name}}.
 % author
 
 \author{
-  Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+  Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also

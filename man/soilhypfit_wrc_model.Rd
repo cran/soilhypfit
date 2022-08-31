@@ -1,5 +1,5 @@
-% 2021-12-20 A. Papritz
-% cd R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_wc_model.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_wc_model.Rd;
 % hunspell -d en_GB-ise wc_model.Rd
 
@@ -13,7 +13,7 @@
 \concept{soil water characteristic}
 \concept{soil water retention curve}
 
-% \newcommand{\mbvec}{\eqn{\mbox{\boldmath$#1$\unboldmath}^\mathrm{#2} #4}{#1#3#4}}
+% \newcommand{\mbvec}{\eqn{\boldsymbol{#1}^\mathrm{#2} #3}}
 
 \title{
 Models for Soil Water Retention Curves
@@ -46,14 +46,14 @@ wc_model(h, nlp, lp, precBits = NULL, wrc_model = "vg")
 
 	\item{nlp}{a mandatory named numeric vector, currently with elements
 	named \code{"alpha"} and \code{"n"}, which are the \emph{nonlinear}
-	parameters \mbvec{\nu}{T}{^T}{= (\alpha, n)}, where \eqn{\alpha} and \eqn{n}
+	parameters \mbvec{\nu}{T}{= (\alpha, n)}, where \eqn{\alpha} and \eqn{n}
 	are the inverse air entry pressure and the shape parameter, see
 	\emph{Details}.  For consistency with other quantities, the unit of
 	\eqn{\alpha} should be \bold{1/meter} [\eqn{\mathrm{m}^{-1}}{m^-1}].}
 
 	\item{lp}{a mandatory named numeric vector, currently with elements named
 	\code{"thetar"} and \code{"thetas"}, which are the \emph{linear}
-	parameters \mbvec{\mu}{T}{^T}{= (\theta_r, \theta_s)} where
+	parameters \mbvec{\mu}{T}{= (\theta_r, \theta_s)} where
 	\eqn{\theta_r} and \eqn{\theta_s} are the residual and saturated water
 	content, respectively, see \emph{Details}.}
 
@@ -76,22 +76,22 @@ water retention curves only by the simplified form of the model by
 - 1/n}, i.e.
 %
 \deqn{
-  S_\mathrm{VG}(h; \mbox{\boldmath$\nu$\unboldmath}) = (
+  S_\mathrm{VG}(h; \boldsymbol{\nu}) = (
   1 + (\alpha \ h)^n)^\frac{1-n}{n}
 }{S_VG(h; \nu) = (1 + (\alpha * h)^n)^((1-n)/n)}
 %
 \deqn{
-  \theta_\mathrm{VG}(h; \mbox{\boldmath$\mu$\unboldmath}, \mbox{\boldmath$\nu$\unboldmath}) =
-	\theta_r + (\theta_s - \theta_r) \, S_\mathrm{VG}(h; \mbox{\boldmath$\nu$\unboldmath})
+  \theta_\mathrm{VG}(h; \boldsymbol{\mu}, \boldsymbol{\nu}) =
+	\theta_r + (\theta_s - \theta_r) \, S_\mathrm{VG}(h; \boldsymbol{\nu})
 }{\theta_VG(h; \mu, \nu) = \theta_r + (\theta_s - \theta_r) * S_VG(h; \nu)}
 %
-where \mbvec{\mu}{T}{^T}{= (\theta_r, \theta_s)} are the residual and
+where \mbvec{\mu}{T}{= (\theta_r, \theta_s)} are the residual and
 saturated water content (\eqn{0 \le \theta_r \le \theta_s \le 1}),
-respectively, and \mbvec{\nu}{T}{^T}{= (\alpha, n)} are the inverse air
+respectively, and \mbvec{\nu}{T}{= (\alpha, n)} are the inverse air
 entry pressure (\eqn{\alpha > 0}) and the shape parameter (\eqn{n > 1}).
 
-Note that \mbvec{\mu}{}{}{} and
-\mbvec{\nu}{}{}{} are passed to the functions by
+Note that \mbvec{\mu}{}{} and
+\mbvec{\nu}{}{} are passed to the functions by
 the arguments \code{lp} and \code{nlp}, respectively.}
 
 % value
@@ -113,7 +113,7 @@ the arguments \code{lp} and \code{nlp}, respectively.}
 % author
 
 \author{
-   Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+   Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also

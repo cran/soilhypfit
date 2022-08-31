@@ -1,5 +1,5 @@
-% 2021-12-22 A. Papritz
-% cd R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_control_fit_wrc_hcc.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_control_fit_wrc_hcc.Rd;
 % hunspell -d en_GB-ise control_fit_wrc_hcc.Rd
 
@@ -23,7 +23,7 @@
 \concept{hydraulic conductivity function}
 \concept{saturated hydraulic conductivity}
 
-% \newcommand{\mbvec}{\eqn{\mbox{\boldmath$#1$\unboldmath}^\mathrm{#2} #4}{#1#3#4}}
+% \newcommand{\mbvec}{\eqn{\boldsymbol{#1}^\mathrm{#2} #3}}
 
 \title{Controlling fit_wrc_hcc}
 
@@ -89,12 +89,12 @@ control_pcmp(ncores = detectCores() - 1L,
   \item{method}{a keyword with possible values \code{"ml"} (maximum
   likelihood, default), \code{"mpd"} (maximum posterior density) or
   \code{"wls"} (weighted least squares) to choose the method for estimating
-  the nonlinear parameters \mbvec{\nu}{}{}{}{}, see
+  the nonlinear parameters \mbvec{\nu}{}{}, see
   \code{\link{soilhypfitIntro}}.}
 
   \item{hessian}{a logical scalar controlling whether the Hessian matrix of
   the objective function should be computed with respect to the possibly
-  transformed nonlinear parameters \mbvec{\nu}{}{}{}{} at the solution
+  transformed nonlinear parameters \mbvec{\nu}{}{} at the solution
   (default: \code{TRUE} if \code{settings \%in\% c("uglobal", "ulocal",
   "sce") && method \%in\% c("mpd", "ml")} and \code{FALSE} otherwise).}
 
@@ -124,7 +124,7 @@ control_pcmp(ncores = detectCores() - 1L,
   \code{\link{hc_model}} and \code{\link{soilhypfitIntro}}.}
 
   \item{initial_param}{a named numeric vector with default initial values
-  for the \emph{nonlinear} parameters \mbvec{\nu}{}{}{}{}
+  for the \emph{nonlinear} parameters \mbvec{\nu}{}{}
   of the models for the water retention curve and/or hydraulic conductivity
   function.  Currently, initial values must be defined for the parameters
   \eqn{\alpha} (default 1.5 [\eqn{\mathrm{m}^{-1}}{m^-1}]), \eqn{n}
@@ -135,7 +135,7 @@ control_pcmp(ncores = detectCores() - 1L,
   \item{approximation_alpha_k0}{a named numeric vector with constants to
   approximate the parameter \eqn{\alpha} and the saturated hydraulic
   conductivity \eqn{K_0} when constraining the estimated \emph{nonlinear}
-  parameters \mbvec{\nu}{}{}{} of the Van
+  parameters \mbvec{\nu}{}{} of the Van
   Genuchten-Mualem model by the \emph{characteristic evaporative length}
   (\cite{Lehmann et al., 2020}), see \code{\link{evaporative-length}} and
   \code{\link{soilhypfitIntro}}.  For consistency with other quantities,
@@ -291,7 +291,7 @@ control_pcmp(ncores = detectCores() - 1L,
         (\code{settings = "ulocal"} or \code{settings = "clocal"}) and a
         transformation not equal to \code{"identity"} is specified in
         \code{param_tf} for any of the \emph{nonlinear} parameters
-        \mbvec{\nu}{}{}{}{}, then the elements of \mbvec{\nu}{}{}{} are
+        \mbvec{\nu}{}{}, then the elements of \mbvec{\nu}{}{} are
         transformed by the functions given in \code{param_tf}.  The values
         of the transformed parameters vary then over the whole real line,
         and an unconstrained algorithm can be used for nonlinear
@@ -315,7 +315,7 @@ control_pcmp(ncores = detectCores() - 1L,
         If a global algorithm is used for the optimisation (\code{settings}
         equal to \code{"uglobal"} \code{"cglobal"} or \code{"sce"}) or if
         \code{"identity"} transformations are specified for all elements of
-        \mbvec{\nu}{}{}{}, then an optimisation algorithm is deployed that
+        \mbvec{\nu}{}{}, then an optimisation algorithm is deployed that
         respects the box constraints given in \code{param_bound}.  If
         parameters are estimated for several soil samples in a single call
         of \code{\link{fit_wrc_hcc}} and if sample-specific box constraints
@@ -325,7 +325,7 @@ control_pcmp(ncores = detectCores() - 1L,
         \code{\link{fit_wrc_hcc}}, see explanations there.
 
         Further note that the transformations specified by \code{param_tf}
-        for the nonlinear parameters \mbvec{\nu}{}{}{} are ignored when a
+        for the nonlinear parameters \mbvec{\nu}{}{} are ignored when a
         global optimisation algorithm is used.
 
     }
@@ -635,7 +635,7 @@ sce = control_sce(
 % author
 
 \author{
-   Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+   Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also

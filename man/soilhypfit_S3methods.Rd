@@ -1,5 +1,5 @@
-% 2022-01-07 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_S3methods.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_S3methods.Rd;
 % hunspell -d en_GB-ise soilhypfitS3methods.Rd
 
@@ -14,7 +14,6 @@
 \alias{print.fit_wrc_hcc}
 \alias{print.summary_fit_wrc_hcc}
 \alias{summary.fit_wrc_hcc}
-
 \concept{soil water}
 \concept{soil water characteristic}
 \concept{soil water retention curve}
@@ -25,7 +24,7 @@
 
 % description
 
-\description{This page documents the methods \code{coef}, 
+\description{This page documents the methods \code{coef},
 \code{summary}, \code{print}, \code{plot} and \code{lines} for the class
 \code{fit_wrc_hcc}.}
 
@@ -76,7 +75,7 @@
   \emph{Details}.}
 
   \item{se}{a logical scalar to control whether standard errors of the
-  nonlinear parameters \mbvec{\nu}{}{}{}{} should be returned, see
+  nonlinear parameters \mbvec{\nu}{}{} should be returned, see
   \emph{Details} and \code{\link{vcov.fit_wrc_hcc}}.}
 
   \item{gof}{a logical scalar to control whether goodness-of-fit statistic
@@ -162,7 +161,7 @@
 
   Residual standard errors, standard errors of the nonlinear parameters and
   confidence intervals based on the asymptotic normal distribution are
-  computed only for mpd and ml estimates, see
+  computed only for mpd and ml estimates, see \cr
   \code{\link{soilhypfitIntro}}, \code{\link{control_fit_wrc_hcc}} and
   \code{\link{vcov}}.
 
@@ -220,7 +219,7 @@
 % author
 
 \author{
-   Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+   Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also

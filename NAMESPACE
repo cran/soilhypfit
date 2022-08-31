@@ -48,6 +48,9 @@ export(
 # fit_wrc_hcc_fit
 # gradient_nlp
 # ineq_constraint_nlp
+# model_names_nlp_lp
+# model_fit_param_consistent
+# model_param_tf_nlp_identity
 # objective_nlp
 # stop_cluster
 

@@ -1,3 +1,4 @@
+% 2022-08-29 A. Papritz
 % definition of common macros
 
-\newcommand{\mbvec}{\eqn{\mbox{\boldmath$#1$\unboldmath}^\mathrm{#2} #4}{#1#3#4}}
+\newcommand{\mbvec}{\eqn{\boldsymbol{#1}^\mathrm{#2} #3}}

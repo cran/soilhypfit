@@ -1,5 +1,5 @@
-% 2021-12-20 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_vcov.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_vcov.Rd;
 % hunspell -d en_GB-ise soilhypfitS3methods.Rd
 
@@ -16,7 +16,7 @@
 \concept{hydraulic conductivity function}
 \concept{saturated hydraulic conductivity}
 
-% \newcommand{\mbvec}{\eqn{\mbox{\boldmath$#1$\unboldmath}^\mathrm{#2} #4}{#1#3#4}}
+% \newcommand{\mbvec}{\eqn{\boldsymbol{#1}^\mathrm{#2} #3}}
 
 \title{\code{vcov} Method for Class \code{fit_wrc_hcc}}
 
@@ -25,7 +25,7 @@
 \description{This page documents the method \code{vcov} for the class
 \code{fit_wrc_hcc} and its \code{coef} method.  \code{vcov} extracts the
 covariance matrices of the nonlinear parameters
-\eqn{\widehat{\mbox{\boldmath$\nu$\unboldmath}}}{hat\nu} estimated by
+\eqn{\widehat{\boldsymbol{\nu}}}{hat\nu} estimated by
 maximum likelihood or maximum posterior density.
 }
 
@@ -64,13 +64,13 @@ maximum likelihood or maximum posterior density.
 
   \item{se}{a logical scalar to control whether standard errors of the
   estimated nonlinear parameters
-  \eqn{\widehat{\mbox{\boldmath$\nu$\unboldmath}}}{hat\nu} should be
+  \eqn{\widehat{\boldsymbol{\nu}}}{hat\nu} should be
   returned (\code{TRUE}, default) or variances (\code{FALSE}).}
 
   \item{correlation}{a logical scalar to control whether correlations
   (\code{TRUE}, default) or covariances (\code{FALSE}) of the esitmated
   nonlinear parameters
-  \eqn{\widehat{\mbox{\boldmath$\nu$\unboldmath}}}{hat\nu} should be
+  \eqn{\widehat{\boldsymbol{\nu}}}{hat\nu} should be
   returned.}
 
   \item{status}{a logical scalar to control whether diagnostics should be
@@ -86,7 +86,7 @@ maximum likelihood or maximum posterior density.
 
   The function \code{vcov} extracts (co-)variances of the nonlinear
   parameters from the inverse Hessian matrix of the objective function at
-  the solution \eqn{\widehat{\mbox{\boldmath$\nu$\unboldmath}}}{hat\nu} for
+  the solution \eqn{\widehat{\boldsymbol{\nu}}}{hat\nu} for
   mpd and ml estimates, see \code{\link{soilhypfitIntro}} and \cite{Stewart
   and \enc{Sørensen}{Soerensen} (1981)}.
 
@@ -135,7 +135,7 @@ maximum likelihood or maximum posterior density.
 % author
 
 \author{
-   Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+   Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also

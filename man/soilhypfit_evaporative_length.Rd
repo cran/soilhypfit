@@ -1,5 +1,5 @@
-% 2021-12-20 A. Papritz
-% cd R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_evaporative_length.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_evaporative_length.Rd;
 % hunspell -d en_GB-ise evaporative_length.Rd
 
@@ -16,7 +16,7 @@
 \concept{hydraulic conductivity function}
 \concept{saturated hydraulic conductivity}
 
-% \newcommand{\mbvec}{\eqn{\mbox{\boldmath$#1$\unboldmath}^\mathrm{#2} #4}{#1#3#4}}
+% \newcommand{\mbvec}{\eqn{\boldsymbol{#1}^\mathrm{#2} #3}}
 
 \title{Evaporative Characteristic Length}
 
@@ -86,7 +86,7 @@ The \emph{characteristic length} of \emph{stage-I evaporation}
 \eqn{L_\mathrm{c}}{L_c} (\cite{Lehmann et al., 2008, 2020}) is defined by
 %
 \deqn{
-  L_\mathrm{c}(\mbox{\boldmath$\nu$\unboldmath}, K_0, E_0) = \frac{
+  L_\mathrm{c}(\boldsymbol{\nu}, K_0, E_0) = \frac{
     \frac{1}{\alpha \,§ n} \left(\frac{2n-1}{n-1}\right)^\frac{2n-1}{n}
   }{1 + \frac{E_0}{K_\mathrm{eff}}}
 }{
@@ -94,11 +94,11 @@ The \emph{characteristic length} of \emph{stage-I evaporation}
   1 / (\alpha * n) * ((2n-1)/(n-1))^((2n-1)/n) / (1 / ((1 + E_0/K_eff)))
 }
 %
-where \mbvec{\nu}{T}{^T}{= (\alpha, n, \tau)} are the nonlinear parameters of
+where \mbvec{\nu}{T}{= (\alpha, n, \tau)} are the nonlinear parameters of
 the VGM model, \eqn{K_0} is the saturated hydraulic conductivity,
 \eqn{E_0} the stage-I evaporation rate and
 \eqn{K_\mathrm{eff} = 4\, K_\mathrm{VGM}(h_\mathrm{crit}; K_0,
-\mbox{\boldmath$\nu$\unboldmath})}{K_eff = 4 * K_VGM(h_crit; \nu)} is the
+\boldsymbol{\nu})}{K_eff = 4 * K_VGM(h_crit; \nu)} is the
 effective hydraulic conductivity at the critical pressure %
 \deqn{
   h_\mathrm{crit} = \frac{1}{\alpha} \,
@@ -109,7 +109,7 @@ effective hydraulic conductivity at the critical pressure %
 %
 see \code{hc_model} for the definition of
 \eqn{K_\mathrm{VGM}(h; K_0,
-\mbox{\boldmath$\nu$\unboldmath})}{K_VGM(h; K_0, \nu)}.
+\boldsymbol{\nu})}{K_VGM(h; K_0, \nu)}.
 
 The quantity \eqn{L_\mathrm{t}}{L_t} is the expected value (``target'') of
 \eqn{L_\mathrm{c}}{L_c} for given shape (\eqn{n}) and tortuosity
@@ -166,7 +166,7 @@ its expected value (\code{lt}).}
 % author
 
 \author{
-   Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+   Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also

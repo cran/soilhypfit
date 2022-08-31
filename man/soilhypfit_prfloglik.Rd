@@ -1,5 +1,5 @@
-% 2021-01-07 A. Papritz
-% cd ~/R.user.home/soilhypfit/soilhypfit_01-5/pkg/man
+% 2022-08-29 A. Papritz
+% cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_prfloglik.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_prfloglik.Rd;
 % hunspell -d en_GB-ise soilhypfit_prfloglik.Rd
 
@@ -14,7 +14,7 @@
 \concept{hydraulic conductivity function}
 \concept{saturated hydraulic conductivity}
 
-\newcommand{\mbvec}{\eqn{\mbox{\boldmath$#1$\unboldmath}^\mathrm{#2} #4}{#1#3#4}}
+\newcommand{\mbvec}{\eqn{\boldsymbol{#1}^\mathrm{#2} #3}}
 
 \title{
   Profile Loglikelihoods and Confidence Intervals for
@@ -35,7 +35,7 @@
 % usage
 
 \usage{
-prfloglik_sample(object, values, soil_sample, 
+prfloglik_sample(object, values, soil_sample,
     ncores = min(detectCores() - 1L, NROW(values)), verbose = 0)
 
 confint_prfloglik_sample(object, parm = names(default_fit_param()),
@@ -50,7 +50,7 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
     denominator_df = c("nonlinear", "all"),
     root_tol = .Machine$double.eps^0.25, froot_tol = sqrt(root_tol),
     ncores = detectCores() - 1L, verbose = 0, ...)
-    
+
 }
 
 % arguments
@@ -60,8 +60,8 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
   \code{\link{fit_wrc_hcc}}.}
 
   \item{values}{a \code{data.frame} or a \code{matrix} with the values of
-  the conditionally linear (\mbvec{\mu}{}{}{}{}) and nonlinear parameters
-  (\mbvec{\nu}{}{}{}{}) that should be kept fixed to compute the likelihood
+  the conditionally linear (\mbvec{\mu}{}{}) and nonlinear parameters
+  (\mbvec{\nu}{}{}) that should be kept fixed to compute the likelihood
   profile (mandatory argument, see \code{\link{soilhypfitIntro}},
   \code{\link{wc_model}} and \code{\link{hc_model}} for information about
   the parametrization of models for soil water retention curves and/or soil
@@ -86,11 +86,11 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
   confidence interval(s).  Note that \code{confint_prfloglik_sample} allows
   to compute a confidence interval for \emph{all} parameters (including the
   linear ones), whereas the \code{confint} method computes confidence
-  intervals for the \emph{nonlinear} parameters (\mbvec{\nu}{}{}{}{}) only,
+  intervals for the \emph{nonlinear} parameters (\mbvec{\nu}{}{}) only,
   see \code{\link{soilhypfitIntro}} for information about the
   parametrization of models for soil water retention curves and/or soil
   hydraulic conductivity functions.}
-  
+
   \item{level}{numeric scalar with the confidence level
   required to compute the confidence interval.}
 
@@ -131,7 +131,7 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
   \emph{Details}.}
 
   \item{...}{additional arguments passed to methods, currently not used.}
-  
+
 }
 
 
@@ -142,15 +142,15 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
   \subsection{Computing likelihood profiles}{
 
     The function \code{prfloglik_sample} computes the loglikelihood profile
-    for a subset of the nonlinear (\mbvec{\nu}{}{}{}{}) (and linear
-    \mbvec{\mu}{}{}{}{}) model parameters.  We denote the profiling
-    parameters of interest by \eqn{\mbox{\boldmath$\phi$\unboldmath}}{\phi}
+    for a subset of the nonlinear (\mbvec{\nu}{}{}) (and linear
+    \mbvec{\mu}{}{}) model parameters.  We denote the profiling
+    parameters of interest by \eqn{\boldsymbol{\phi}}{\phi}
     and the nuisance parameters that are estimated when computing the
-    profile by \eqn{\mbox{\boldmath$\psi$\unboldmath}}{\psi}, so that
+    profile by \eqn{\boldsymbol{\psi}}{\psi}, so that
     \eqn{
       (
-        \mbox{\boldmath$\phi$\unboldmath}^\mathrm{T},
-        \mbox{\boldmath$\psi$\unboldmath}^\mathrm{T}
+        \boldsymbol{\phi}^\mathrm{T},
+        \boldsymbol{\psi}^\mathrm{T}
       )^\mathrm{T}
     }{
       (\phi^T, \psi^T)^T
@@ -158,33 +158,33 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
     is a rearranged version of the parameter vector
       \eqn{
       (
-        \mbox{\boldmath$\mu$\unboldmath}^\mathrm{T},
-        \mbox{\boldmath$\nu$\unboldmath}^\mathrm{T}
+        \boldsymbol{\mu}^\mathrm{T},
+        \boldsymbol{\nu}^\mathrm{T}
       )^\mathrm{T}
     }{
       (\mu^T, \nu^T)^T
     }, see \code{\link{soilhypfitIntro}}.
     \code{prfloglik_sample} computes the estimates
     \eqn{
-      \widehat{\mbox{\boldmath$\psi$\unboldmath}}(\mbox{\boldmath$\phi$\unboldmath})
+      \widehat{\boldsymbol{\psi}}(\boldsymbol{\phi})
     }{
        hat\psi(\phi)
     }
-    of \eqn{\mbox{\boldmath$\psi$\unboldmath}}{\psi}
+    of \eqn{\boldsymbol{\psi}}{\psi}
     and the profile loglikelihood
     \eqn{
-      Q(\mbox{\boldmath$\phi$\unboldmath},
-        \widehat{\mbox{\boldmath$\psi$\unboldmath}}(\mbox{\boldmath$\phi$\unboldmath});
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}
+      Q(\boldsymbol{\phi},
+        \widehat{\boldsymbol{\psi}}(\boldsymbol{\phi});
+        \boldsymbol{\theta}, \boldsymbol{K},
+        \boldsymbol{h}
       )
     }{
       Q(\phi, hat\psi(\phi); \theta, K, h)
     }
-    as a function of \eqn{\mbox{\boldmath$\phi$\unboldmath}}{\phi}.
-    
+    as a function of \eqn{\boldsymbol{\phi}}{\phi}.
+
     To compute the estimates,
-    \eqn{\mbox{\boldmath$\psi$\unboldmath}}{\psi}
+    \eqn{\boldsymbol{\psi}}{\psi}
     is partitioned into the nonlinear and conditionally linear parameters, see
     \code{\link{soilhypfitIntro}} for details.
     \code{prfloglik_sample} uses the packages \pkg{parallel} and
@@ -199,8 +199,8 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
     confidence interval of a single model parameter
     \eqn{
       \phi \in (
-        \mbox{\boldmath$\mu$\unboldmath}^\mathrm{T},
-        \mbox{\boldmath$\nu$\unboldmath}^\mathrm{T}
+        \boldsymbol{\mu}^\mathrm{T},
+        \boldsymbol{\nu}^\mathrm{T}
       )^\mathrm{T}
     }{
        \phi \in (\mu^T, \nu^T)^T
@@ -213,14 +213,14 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
       \eqn{
         T(\phi) = \Delta Q(\phi) = 2(
         Q(\widehat{\phi},
-        \widehat{\mbox{\boldmath$\psi$\unboldmath}};
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}
+        \widehat{\boldsymbol{\psi}};
+        \boldsymbol{\theta}, \boldsymbol{K},
+        \boldsymbol{h}
         ) -
         Q(\phi,
-        \widehat{\mbox{\boldmath$\psi$\unboldmath}}(\phi);
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}
+        \widehat{\boldsymbol{\psi}}(\phi);
+        \boldsymbol{\theta}, \boldsymbol{K},
+        \boldsymbol{h}
       ))
       }{
         T(\phi) = \Delta Q(\phi) = 2(Q(hat\phi, hat\psi; \theta, K, h) - Q(\phi, hat\psi(\phi); \theta, K, h))
@@ -229,7 +229,7 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
       (possible choice when both water retention and/or
       hydraulic conductivity data were used to estimate the parameters), or
 
-      \item that the transformed test statistic 
+      \item that the transformed test statistic
       \eqn{
         T(\phi) = \left(\exp(\Delta Q(\phi) / n) - 1 \right) (n - p)
       }{
@@ -238,7 +238,7 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
       follows an \eqn{F(1,n-p)}-distribution where \eqn{n} is the number of
       water content or hydraulic conductivity measurements, and \eqn{p} is
       the number of estimated parameters (see Uusipaikka,
-      2008, p. 115, for details).  \code{denominator_df} allows to control 
+      2008, p. 115, for details).  \code{denominator_df} allows to control
       how \eqn{p} is chosen. Note that this test distribution can
       only be chosen (and is then the default) when only water retention or
       only hydraulic conductivty data were used to estimate the parameters.
@@ -248,9 +248,9 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
     \code{confint_prfloglik_sample} computes profile loglikelihoods
     \eqn{
       Q(\phi,
-        \widehat{\mbox{\boldmath$\psi$\unboldmath}}(\phi);
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}
+        \widehat{\boldsymbol{\psi}}(\phi);
+        \boldsymbol{\theta}, \boldsymbol{K},
+        \boldsymbol{h}
       )
     }{
       Q(\phi, hat\psi(\phi); \theta, K, h)
@@ -261,15 +261,15 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
     \deqn{
       f(\phi) = q_T(\gamma)- T(\phi)
     }
-    in the interval defined by \code{param_bound}. \eqn{q_T(\gamma)} is 
+    in the interval defined by \code{param_bound}. \eqn{q_T(\gamma)} is
     the \eqn{\gamma}-quantile of the chosen test distribution for \eqn{T}.
   }
-  
+
   \subsection{Computing confidence intervals for several soil samples}{
-  
+
     The \code{confint} method computes 2 types of confidence intervals (in
-    dependence of \code{type}) of only the nonlinear parameters 
-    \mbvec{\nu}{}{}{}{}, possibly for
+    dependence of \code{type}) of only the nonlinear parameters
+    \mbvec{\nu}{}{}, possibly for
     multiple soil samples at the same time:
 
     \itemize{
@@ -286,7 +286,7 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
     }
 
   }
-  
+
   \subsection{Requirements for computing loglikelihood profiles}{
 
     The parameters contained in \code{object} must be estimated by maximum
@@ -310,19 +310,19 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
 
   The function \code{prfloglik_sample} returns a \code{data.frame}
   with the columns of \code{values} (parameters of interest
-  \eqn{\mbox{\boldmath$\phi$\unboldmath}}{\phi}),
+  \eqn{\boldsymbol{\phi}}{\phi}),
   a column \code{loglik} with the
   maximized profile loglikelihood
   \eqn{Q(\phi,
-        \widehat{\mbox{\boldmath$\psi$\unboldmath}}(\phi);
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}
+        \widehat{\boldsymbol{\psi}}(\phi);
+        \boldsymbol{\theta}, \boldsymbol{K},
+        \boldsymbol{h}
       )
   }{
     Q(\phi, hat\psi(\phi); \theta, K, h)
   }, columns with the estimated parameters
   \eqn{
-      \widehat{\mbox{\boldmath$\psi$\unboldmath}}(\mbox{\boldmath$\phi$\unboldmath})
+      \widehat{\boldsymbol{\psi}}(\boldsymbol{\phi})
     }{
        hat\psi(\phi)^T
     },
@@ -341,9 +341,9 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
   (\code{param_estimate}), the maximized loglikelihood
   \eqn{
     Q(\widehat{\phi},
-        \widehat{\mbox{\boldmath$\psi$\unboldmath}};
-        \mbox{\boldmath$\theta$\unboldmath}, \mbox{\boldmath$K$\unboldmath},
-        \mbox{\boldmath$h$\unboldmath}
+        \widehat{\boldsymbol{\psi}};
+        \boldsymbol{\theta}, \boldsymbol{K},
+        \boldsymbol{h}
     )
   }{
     Q(hat\phi, hat\psi; \theta, K, h)
@@ -352,9 +352,9 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
   the type of test distribution used (\code{test}),
   the significance \code{level}, the number
   of water content (\code{nobs_wrc}) and conductivity measurements
-  (\code{nobs_hcc}) and the function values of \eqn{f(\phi)} 
+  (\code{nobs_hcc}) and the function values of \eqn{f(\phi)}
   evaluated at the roots returned by \code{\link[stats]{uniroot}}.
-  
+
   The method \code{confint} returns a dataframe with the lower and upper
   limits of the confidence intervals for the estimated nonlinear
   parameters.
@@ -372,7 +372,7 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
 % author
 
 \author{
-   Andreas Papritz \email{andreas.papritz@env.ethz.ch}.
+   Andreas Papritz \email{papritz@retired.ethz.ch}.
 }
 
 % see also
