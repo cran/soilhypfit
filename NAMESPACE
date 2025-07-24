@@ -4,7 +4,7 @@ import(graphics, nloptr, parallel, snowfall, stats, utils)
 
 importFrom(mgcv, gam)
 importFrom(quadprog, solve.QP)
-importFrom(parallel, detectCores, mclapply)
+# importFrom(parallel, detectCores, mclapply)
 importFrom(Rmpfr, mpfr)
 # importFrom(snowfall, sfExport, sfExportAll, sfInit, sfIsRunning, sfLapply,
 #  sfLibrary, sfStop)

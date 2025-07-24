@@ -1,4 +1,4 @@
-% 2021-12-20 A. Papritz
+% 2022-12-17 A. Papritz
 % cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_sim_wrc_hcc.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_sim_wrc_hcc.Rd;
 % hunspell -d en_GB-ise sim_wrc_hcc.Rd
@@ -71,10 +71,15 @@
 \examples{
 data(sim_wrc_hcc)
 
-library(lattice)
+if(!requireNamespace("lattice", quietly = TRUE)){
+  install.packages("lattice", repos = "https://cloud.r-project.org/")
+  requireNamespace("lattice", quietly = TRUE)
+}
 
-xyplot(wc ~ head|id, type = "l", sim_wrc_hcc, scales = list( x = list(log=TRUE)))
-xyplot(hc ~ head|id, type = "l", sim_wrc_hcc, scales = list( log = TRUE))
+lattice::xyplot(wc ~ head|id, type = "l", sim_wrc_hcc, 
+  scales = list( x = list(log=TRUE)))
+lattice::xyplot(hc ~ head|id, type = "l", sim_wrc_hcc, 
+  scales = list( log = TRUE))
 
 }
 

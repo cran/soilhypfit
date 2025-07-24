@@ -3,6 +3,22 @@
 
 \title{News for Package \pkg{soilhypfit}}
 
+\section{Changes in version 0.1-8 (2025-07-24)}{
+ \subsection{BUG FIXES}{
+    \itemize{
+
+      \item only NAMESPACE is imported for the formerly attached packages 
+      \pkg{graphics}, \pkg{stats} and \pkg{utils}      
+      
+      \item help pages that use suggested package \pkg{lattice} changed
+
+      \item correction of links to contributed packages in help pages
+      
+    }
+  }
+}
+
+
 \section{Changes in version 0.1-7 (2022-08-31)}{
   \subsection{NEW FEATURES}{
   \itemize{

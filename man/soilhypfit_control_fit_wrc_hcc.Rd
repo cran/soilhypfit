@@ -451,7 +451,7 @@ control_pcmp(ncores = detectCores() - 1L,
       explicitly passed to \code{fit_wrc_hcc}.\cr
 
       The following defaults are set by \code{control_fit_wrc_hcc} for the
-      argument \code{opts} of \code{\link{nloptr}} (:
+      argument \code{opts} of \code{\link[nloptr]{nloptr}} (:
 
       \enumerate{
 

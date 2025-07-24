@@ -351,13 +351,13 @@ default_fit_param(
     \itemize{
 
       \item{\code{converged}}: an integer code issued by
-      \code{\link[SoilHyP]{SCEoptim}} or \code{\link{nloptr}} on (non-)
+      \code{\link[SoilHyP]{SCEoptim}} or \code{\link[nloptr]{nloptr}} on (non-)
       convergence, see \code{\link{convergence_message}} and
       \href{https://nlopt.readthedocs.io/en/latest/NLopt_Reference/#return-values}{NLopt
       return values}.
 
       \item{\code{message}}: a character string issued by
-      \code{\link[SoilHyP]{SCEoptim}} or \code{\link{nloptr}} on
+      \code{\link[SoilHyP]{SCEoptim}} or \code{\link[nloptr]{nloptr}} on
       (non-)convergence.
 
       \item{\code{evaluation}}: the number of evaluations of the objective

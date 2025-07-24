@@ -1,4 +1,4 @@
-% 2022-08-29 A. Papritz
+% 2022-12-17 A. Papritz
 % cd ~/R.user.home/soilhypfit/soilhypfit_01-7/pkg/man
 % R CMD Rdconv -t html -o bla.html soilhypfit_prfloglik.Rd ; open bla.html; R CMD Rd2pdf --force soilhypfit_prfloglik.Rd;
 % hunspell -d en_GB-ise soilhypfit_prfloglik.Rd
@@ -410,7 +410,10 @@ confint_prfloglik_sample(object, parm = names(default_fit_param()),
 \donttest{
 # use of \donttest{} because execution time exceeds 5 seconds
 
-library(lattice)
+if(!requireNamespace("lattice", quietly = TRUE)){
+  install.packages("lattice", repos = "https://cloud.r-project.org/")
+  requireNamespace("lattice", quietly = TRUE)
+}
 
 data(sim_wrc_hcc)
 
@@ -482,26 +485,26 @@ rprfloglik_alpha_n <- prfloglik_sample(
 )
 
 # joint confidence region of alpha and n based on likelihood ratio test
-levelplot(loglik ~ alpha + n, rprfloglik_alpha_n,
+lattice::levelplot(loglik ~ alpha + n, rprfloglik_alpha_n,
   panel = function(x, y, z, subscripts, ...){
-    panel.levelplot(x, y, z, subscripts, ...)
-    panel.levelplot(x, y, z, subscripts, region = FALSE, contour = TRUE,
+    lattice::panel.levelplot(x, y, z, subscripts, ...)
+    lattice::panel.levelplot(x, y, z, subscripts, region = FALSE, contour = TRUE,
       at = -coef_id_1["obj"] - 0.5 * qchisq(0.95, 2),
       lty = "solid"
     )
-    panel.levelplot(x, y, z, subscripts, region = FALSE, contour = TRUE,
+    lattice::panel.levelplot(x, y, z, subscripts, region = FALSE, contour = TRUE,
       at = -coef_id_1["obj"] - 0.5 * qchisq(0.9, 2),
       lty = "dashed"
     )
-    panel.levelplot(x, y, z, subscripts, region = FALSE, contour = TRUE,
+    lattice::panel.levelplot(x, y, z, subscripts, region = FALSE, contour = TRUE,
       at = -coef_id_1["obj"] - 0.5 * qchisq(0.8, 2),
       lty = "dotted"
     )
-    panel.points(coef_id_1["alpha"], coef_id_1["n"], pch = 16)
-    panel.lines(
+    lattice::panel.points(coef_id_1["alpha"], coef_id_1["n"], pch = 16)
+    lattice::panel.lines(
       x = rprfloglik_alpha[, c("alpha", "n")], col = "blue"
     )
-    panel.lines(
+    lattice::panel.lines(
       x = rprfloglik_n[, c("alpha", "n")], col = "magenta"
     )
   }, key = list(

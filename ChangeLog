@@ -166,3 +166,12 @@ initial values for the nonlinear parameters alpha and n
 * soilhypfit_prfloglik.Rd: changes for KaTeX
 * soilhypfit_vcov.Rd: changes for KaTeX
 * soilhypfit_wrc_model.Rd: changes for KaTeX
+
+
+2022-08-29 Andreas Papritz  <papritz@retired.ethz.ch>
+
+
+
+2025-07-24 Andreas Papritz  <papritz@retired.ethz.ch>
+
+* soilhypfit_fit_wrc_hcc.Rd: correction of link to nloptr package* soilhypfit_control_fit_wrc_hcc.Rd: correction of link to nloptr package
